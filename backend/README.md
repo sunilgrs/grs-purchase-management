@@ -12,7 +12,9 @@ npx prisma db push       # create dev.db from schema
 npx prisma db seed       # load demo data (4 users, stores, vendors, items, requirements)
 ```
 
-`.env` is gitignored; use `.env.example` as a template.
+`.env` is gitignored; use `.env.example` as a template. The API rate-limits requests
+(100/min globally, 10/min on `/api/auth/*`; disabled when `NODE_ENV=test`) and CORS-allowlists
+origins from `CORS_ORIGINS` (defaults to the localhost dev/8080 ports).
 
 ## Run
 

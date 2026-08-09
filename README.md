@@ -86,6 +86,17 @@ Notes:
 - To run the backend outside Docker against a file on disk, keep the existing local workflow
   (`npx prisma db push && npx prisma db seed`).
 
+## Production hardening
+
+- **JWT secret** — set a strong `JWT_SECRET` in `.env` (see `.env.example`). Never use the default.
+- **Rate limiting** — the API is rate-limited (100 req/min globally, 10 req/min on `/api/auth/*`).
+  Disabled when `NODE_ENV=test` so test suites are unaffected.
+- **CORS** — the backend only allows origins in `CORS_ORIGINS` (default: localhost dev ports).
+  The Nginx container proxies `/api`, so browsers talking to `:8080` are same-origin regardless.
+- **HTTPS** — terminate TLS at a reverse proxy in front of the `frontend` container (e.g. Nginx +
+  Let's Encrypt / Certbot, or your cloud load balancer), then set `CORS_ORIGINS` to the public
+  `https://` origin.
+
 ## Demo accounts
 
 | Role        | Email                 | Password   |
