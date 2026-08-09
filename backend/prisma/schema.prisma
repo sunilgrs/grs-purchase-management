@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id                                          Int           @id @default(autoincrement())
+  name                                        String
+  mobile                                      String        @unique
+  email                                       String?       @unique
+  password                                    String
+  role                                        String        @default("STORE_KEEPER")
+  status                                      String        @default("ACTIVE")
+  createdAt                                   DateTime      @default(now())
+  updatedAt                                   DateTime      @updatedAt
+  AuditLog               AuditLog[]
+  Delivery               Delivery[]
+  approvedRequirements   Requirement[] @relation("Requirement_approvedByIdToUser")
+  requestedRequirements  Requirement[] @relation("Requirement_requestedByIdToUser")
+}
+
+model PurchaseOrder {
+  id                Int                 @id @default(autoincrement())
+  poNumber          String              @unique
+  requirementId     Int
+  vendorId          Int
+  orderDate         DateTime            @default(now())
+  expectedDate      DateTime
+  status            String              @default("PENDING")
+  notes             String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  Delivery          Delivery[]
+  Discrepancy       Discrepancy[]
+  Vendor            Vendor              @relation(fields: [vendorId], references: [id])
+  Requirement       Requirement         @relation(fields: [requirementId], references: [id])
+  items             PurchaseOrderItem[]
+
+  @@index([vendorId])
+  @@index([status])
+}
+
+model PurchaseOrderItem {
+  id            Int           @id @default(autoincrement())
+  poId          Int
+  itemId        Int
+  orderedQty    Int
+  receivedQty   Int           @default(0)
+  unitPrice     Float?
+  Item          Item          @relation(fields: [itemId], references: [id])
+  PurchaseOrder PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+
+  @@index([poId])
+}
+
+model AuditLog {
+  id            Int      @id @default(autoincrement())
+  entityType    String
+  entityId      String
+  action        String
+  description   String?
+  performedById Int?
+  createdAt     DateTime @default(now())
+  User          User?    @relation(fields: [performedById], references: [id])
+
+  @@index([entityType, entityId])
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  Item      Item[]
+}
+
+model Delivery {
+  id            Int            @id @default(autoincrement())
+  poId          Int
+  deliveryDate  DateTime       @default(now())
+  receivedById  Int
+  status        String         @default("PARTIAL")
+  remarks       String?
+  createdAt     DateTime       @default(now())
+  User          User           @relation(fields: [receivedById], references: [id])
+  PurchaseOrder PurchaseOrder  @relation(fields: [poId], references: [id])
+  items         DeliveryItem[]
+  Discrepancy   Discrepancy[]
+
+  @@index([poId])
+}
+
+model DeliveryItem {
+  id          Int      @id @default(autoincrement())
+  deliveryId  Int
+  itemId      Int
+  receivedQty Int
+  condition   String   @default("GOOD")
+  remarks     String?
+  Item        Item     @relation(fields: [itemId], references: [id])
+  Delivery    Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+
+  @@index([deliveryId])
+}
+
+model Discrepancy {
+  id              Int           @id @default(autoincrement())
+  poId            Int
+  deliveryId      Int
+  itemId          Int
+  discrepancyType String
+  quantity        Int?
+  description     String?
+  photo           String?
+  status          String        @default("OPEN")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  Item            Item          @relation(fields: [itemId], references: [id])
+  Delivery        Delivery      @relation(fields: [deliveryId], references: [id])
+  PurchaseOrder   PurchaseOrder @relation(fields: [poId], references: [id])
+
+  @@index([poId])
+  @@index([status])
+}
+
+model Item {
+  id                Int                 @id @default(autoincrement())
+  itemCode          String              @unique
+  itemName          String
+  categoryId        Int?
+  unit              String              @default("Nos")
+  preferredVendorId Int?
+  active            Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  DeliveryItem      DeliveryItem[]
+  Discrepancy       Discrepancy[]
+  Vendor            Vendor?             @relation(fields: [preferredVendorId], references: [id])
+  Category          Category?           @relation(fields: [categoryId], references: [id])
+  PurchaseOrderItem PurchaseOrderItem[]
+  RequirementItem   RequirementItem[]
+}
+
+model Requirement {
+  id                                   Int               @id @default(autoincrement())
+  requirementNo                        String            @unique
+  storeId                              Int
+  requestedById                        Int
+  requiredDate                         DateTime
+  priority                             String            @default("NORMAL")
+  status                               String            @default("SUBMITTED")
+  approvedById                         Int?
+  remarks                              String?
+  createdAt                            DateTime          @default(now())
+  updatedAt                            DateTime          @updatedAt
+  PurchaseOrder                        PurchaseOrder[]
+  approvedBy                           User?             @relation("Requirement_approvedByIdToUser", fields: [approvedById], references: [id])
+  requestedBy           User              @relation("Requirement_requestedByIdToUser", fields: [requestedById], references: [id])
+  Store                                Store             @relation(fields: [storeId], references: [id])
+  items                                RequirementItem[]
+
+  @@index([storeId])
+  @@index([status])
+}
+
+model RequirementItem {
+  id            Int         @id @default(autoincrement())
+  requirementId Int
+  itemId        Int
+  quantity      Int
+  Item          Item        @relation(fields: [itemId], references: [id])
+  Requirement   Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+
+  @@index([requirementId])
+}
+
+model Store {
+  id          Int           @id @default(autoincrement())
+  storeName   String        @unique
+  location    String?
+  createdAt   DateTime      @default(now())
+  Requirement Requirement[]
+}
+
+model Vendor {
+  id            Int             @id @default(autoincrement())
+  vendorName    String          @unique
+  contactPerson String?
+  mobile        String?
+  whatsapp      String?
+  email         String?
+  address       String?
+  active        Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  Item          Item[]
+  PurchaseOrder PurchaseOrder[]
+}

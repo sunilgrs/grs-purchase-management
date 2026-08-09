@@ -1,0 +1,13 @@
+# Editor / OS cruft
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Logs
+*.log
+
+# Agent tooling caches
+.agents/
+skills-lock.json
