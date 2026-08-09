@@ -24,9 +24,11 @@ Requirement → Approval → PO → WhatsApp → Delivery → Verification → C
 Prerequisites: Node.js 20+, npm.
 
 ```bash
+# One-shot setup (installs both apps, generates the Prisma client)
+npm run setup
+
 # Backend — http://localhost:3000 (API under /api)
 cd backend
-npm install
 cp .env.example .env            # then edit if needed
 npx prisma db push              # create dev.db from schema
 npx prisma db seed              # load demo data
@@ -34,11 +36,29 @@ npm run start:dev
 
 # Frontend — http://localhost:5173 (proxies /api to :3000)
 cd frontend
-npm install
+npm run dev
+```
+
+Or run both dev servers together from the root:
+
+```bash
 npm run dev
 ```
 
 Open http://localhost:5173 and log in with a demo account.
+
+## Root scripts
+
+| Script             | Description                                            |
+| ------------------ | ------------------------------------------------------ |
+| `npm run dev`      | Backend (`start:dev`) + frontend (Vite) together       |
+| `npm run setup`    | Install both apps and generate the Prisma client       |
+| `npm run db:push`  | Create the backend SQLite DB from the schema           |
+| `npm run seed`     | Load demo data into the backend DB                     |
+| `npm run test`     | Backend unit + e2e, then frontend tests                |
+| `npm run test:coverage` | Backend unit + frontend coverage reports          |
+| `npm run lint`     | ESLint (backend) + Oxlint (frontend)                   |
+| `npm run build`    | Build both apps                                        |
 
 ## Demo accounts
 

@@ -1,0 +1,20 @@
+{
+  "name": "grs-purchase-management",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm --prefix backend run start:dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "setup": "npm --prefix backend install && npm --prefix frontend install && npm --prefix backend run db:generate",
+    "db:push": "npm --prefix backend exec -- prisma db push",
+    "seed": "npm --prefix backend exec -- prisma db seed",
+    "test": "npm --prefix backend run test && npm --prefix backend run test:e2e && npm --prefix frontend run test",
+    "test:coverage": "npm --prefix backend run test:cov && npm --prefix frontend run test:coverage",
+    "lint": "npm --prefix backend run lint && npm --prefix frontend run lint",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

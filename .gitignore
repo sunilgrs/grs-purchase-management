@@ -5,6 +5,9 @@ Thumbs.db
 !.vscode/extensions.json
 .idea
 
+# Dependencies
+node_modules/
+
 # Logs
 *.log
 
