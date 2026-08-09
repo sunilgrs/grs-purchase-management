@@ -71,6 +71,19 @@ describe('DeliveriesPage', () => {
     expect(screen.getByText('Ramesh')).toBeInTheDocument()
   })
 
+  it('shows zero issues when no discrepancies are linked', () => {
+    mocks.dels = [makeDelivery({})]
+    renderPage()
+    expect(screen.getByRole('columnheader', { name: /issues/i })).toBeInTheDocument()
+    expect(screen.getByText('0')).toBeInTheDocument()
+  })
+
+  it('shows the discrepancy count as a badge when issues exist', () => {
+    mocks.dels = [makeDelivery({ _count: { items: 1, Discrepancy: 2 } })]
+    renderPage()
+    expect(screen.getByText('2')).toBeInTheDocument()
+  })
+
   it('opens the detail modal from View', async () => {
     const user = userEvent.setup()
     mocks.dels = [makeDelivery({})]

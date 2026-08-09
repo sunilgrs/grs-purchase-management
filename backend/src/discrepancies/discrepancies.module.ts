@@ -7,5 +7,6 @@ import { AuditLogsModule } from '../audit-logs/audit-logs.module.js';
   imports: [AuditLogsModule],
   controllers: [DiscrepanciesController],
   providers: [DiscrepanciesService],
+  exports: [DiscrepanciesService],
 })
 export class DiscrepanciesModule {}

@@ -5,8 +5,15 @@
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogsService } from '../audit-logs/audit-logs.service.js';
+import { DiscrepanciesService } from '../discrepancies/discrepancies.service.js';
 import { CreateDeliveryDto } from './dto/create-delivery.dto.js';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto.js';
+
+const CONDITION_TO_DISCREPANCY_TYPE: Record<string, string> = {
+  DAMAGED: 'DAMAGE',
+  SHORTAGE: 'SHORTAGE',
+  MISMATCH: 'WRONG_ITEM',
+};
 
 const DELIVERY_INCLUDE = {
   User: { select: { id: true, name: true, mobile: true } },
@@ -32,6 +39,7 @@ export class DeliveriesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLogsService: AuditLogsService,
+    private readonly discrepanciesService: DiscrepanciesService,
   ) {}
 
   async create(
@@ -138,7 +146,39 @@ export class DeliveriesService {
       performedById: createDeliveryDto.receivedById ?? performedById,
     });
 
+    await this.autoRaiseDiscrepancies(createDeliveryDto, delivery!.id, po);
     return delivery;
+  }
+
+  private async autoRaiseDiscrepancies(
+    dto: CreateDeliveryDto,
+    deliveryId: number,
+    po: { poNumber: string; items: { itemId: number; orderedQty: number }[] },
+  ) {
+    const orderedQtyByItem = new Map(
+      po.items.map((it) => [it.itemId, it.orderedQty]),
+    );
+    for (const line of dto.items) {
+      const type = CONDITION_TO_DISCREPANCY_TYPE[line.condition ?? 'GOOD'];
+      if (!type) continue;
+      const shortfall =
+        (orderedQtyByItem.get(line.itemId) ?? line.receivedQty) -
+        line.receivedQty;
+      const quantity =
+        type === 'SHORTAGE'
+          ? shortfall
+          : type === 'DAMAGE'
+            ? line.receivedQty
+            : null;
+      await this.discrepanciesService.create({
+        poId: dto.poId,
+        deliveryId,
+        itemId: line.itemId,
+        discrepancyType: type,
+        quantity: quantity !== null && quantity > 0 ? quantity : undefined,
+        description: `Auto-raised from delivery against ${po.poNumber} (${line.condition})`,
+      });
+    }
   }
 
   findAll() {

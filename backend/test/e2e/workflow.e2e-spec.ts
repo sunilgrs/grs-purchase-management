@@ -272,4 +272,73 @@ describe('Purchase workflow (e2e)', () => {
       .expect(200);
     expect(final.body.status).toBe('COMPLETED');
   });
+
+  it('auto-raises discrepancies from damaged/shortage delivery lines', async () => {
+    const token = ctx.storeKeeper.accessToken;
+
+    const create = await server()
+      .post('/api/requirements')
+      .set(auth(token))
+      .send(makeRequirement({ items: [{ itemId: ctx.itemBId, quantity: 4 }] }))
+      .expect(201);
+    const reqId = create.body.id;
+
+    await server()
+      .post(`/api/requirements/${reqId}/submit`)
+      .set(auth(token))
+      .send({})
+      .expect(201);
+    await server()
+      .post(`/api/requirements/${reqId}/store-manager-review`)
+      .set(auth(token))
+      .send({ approve: true })
+      .expect(201);
+    const approve = await server()
+      .post(`/api/requirements/${reqId}/approve`)
+      .set(auth(ctx.manager.accessToken))
+      .send({
+        vendorId: ctx.vendorBId,
+        expectedDate: new Date().toISOString().slice(0, 10),
+        items: [{ itemId: ctx.itemBId, orderedQty: 4, unitPrice: 50 }],
+      })
+      .expect(201);
+    const po = approve.body;
+
+    const delivery = await server()
+      .post('/api/deliveries')
+      .set(auth(token))
+      .send({
+        poId: po.id,
+        receivedById: ctx.storeKeeper.id,
+        status: 'PARTIAL',
+        items: [
+          {
+            itemId: ctx.itemBId,
+            receivedQty: 3,
+            condition: 'SHORTAGE',
+            remarks: 'One item short',
+          },
+        ],
+      })
+      .expect(201);
+
+    const discs = await server()
+      .get('/api/discrepancies')
+      .set(auth(token))
+      .expect(200);
+    const auto = discs.body.find(
+      (d: { deliveryId: number }) => d.deliveryId === delivery.body.id,
+    );
+    expect(auto).toBeDefined();
+    expect(auto.discrepancyType).toBe('SHORTAGE');
+    expect(auto.status).toBe('ISSUE_RAISED');
+    expect(auto.quantity).toBe(1);
+    expect(auto.description).toContain('Auto-raised');
+
+    const delivered = await server()
+      .get(`/api/deliveries/${delivery.body.id}`)
+      .set(auth(token))
+      .expect(200);
+    expect(delivered.body.status).toBe('PARTIAL');
+  });
 });

@@ -35,7 +35,7 @@ export default function DeliveriesPage() {
             No deliveries yet. Open a purchase order and click “Deliver”.
           </div>
         ) : (
-          <Table headers={['PO', 'Delivery Date', 'Received By', 'Status', 'Items', '']}>
+          <Table headers={['PO', 'Delivery Date', 'Received By', 'Status', 'Items', 'Issues', '']}>
             {data.map((d) => (
               <tr key={d.id} className="hover:bg-slate-50">
                 <td className="px-4 py-3 font-mono text-xs font-medium text-slate-900">
@@ -47,6 +47,13 @@ export default function DeliveriesPage() {
                   <Badge color={badgeColor(d.status)}>{d.status.replace('_', ' ')}</Badge>
                 </td>
                 <td className="px-4 py-3">{d._count?.items ?? d.items?.length ?? 0}</td>
+                <td className="px-4 py-3">
+                  {(d._count?.Discrepancy ?? 0) > 0 ? (
+                    <Badge color="red">{d._count!.Discrepancy}</Badge>
+                  ) : (
+                    <span className="text-sm text-slate-400">0</span>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-right">
                   <Button size="sm" variant="ghost" onClick={() => setViewing(d)}>View</Button>
                 </td>
