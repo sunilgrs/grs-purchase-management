@@ -1,12 +1,13 @@
 ﻿import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { RegisterDto } from './dto/register.dto.js';
+import { PUBLIC_REGISTER_ROLES, RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 
 @Injectable()
@@ -17,6 +18,12 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
+    if (dto.role && !PUBLIC_REGISTER_ROLES.includes(dto.role)) {
+      throw new ForbiddenException(
+        'You can only self-register as STORE_KEEPER, MANAGER or PURCHASER',
+      );
+    }
+
     const existing = await this.prisma.user.findFirst({
       where: {
         OR: [{ mobile: dto.mobile }, { email: dto.email ?? '' }],

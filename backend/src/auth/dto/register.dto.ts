@@ -14,6 +14,12 @@ export const USER_ROLES = [
   'PURCHASER',
 ] as const;
 
+export const PUBLIC_REGISTER_ROLES = [
+  'STORE_KEEPER',
+  'MANAGER',
+  'PURCHASER',
+] as const;
+
 export class RegisterDto {
   @IsString()
   @IsNotEmpty()
@@ -32,6 +38,6 @@ export class RegisterDto {
   password: string;
 
   @IsOptional()
-  @IsIn(USER_ROLES)
-  role?: (typeof USER_ROLES)[number];
+  @IsIn(PUBLIC_REGISTER_ROLES)
+  role?: (typeof PUBLIC_REGISTER_ROLES)[number];
 }

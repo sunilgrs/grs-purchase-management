@@ -54,6 +54,19 @@ describe('Auth (e2e)', () => {
     expect(res.status).toBe(409);
   });
 
+  it('rejects self-registration as ADMIN', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/api/auth/register')
+      .send({
+        name: 'Wannabe Admin',
+        mobile: '9199999997',
+        email: 'wannabe@test.example',
+        password: 'secret123',
+        role: 'ADMIN',
+      });
+    expect(res.status).toBe(400);
+  });
+
   it('rejects unauthenticated access to protected routes', async () => {
     await request(app.getHttpServer()).get('/api/stores').expect(401);
   });
