@@ -28,7 +28,9 @@ Vite dev server. Set `PORT` in `.env` to override.
 ## Test
 
 ```bash
-npm run test:e2e         # 42 e2e tests (auth, workflow, rbac) against a dedicated DB
+npm run test          # 16 unit tests (common helpers) against src
+npm run test:e2e      # 43 e2e tests (auth, workflow, rbac) against a dedicated DB
+npm run test:cov      # unit tests with coverage
 npm run lint
 npm run build
 ```

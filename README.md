@@ -52,8 +52,9 @@ Open http://localhost:5173 and log in with a demo account.
 ## Testing
 
 ```bash
-# Backend — e2e (42 tests: auth, workflow, rbac)
+# Backend — unit (16) + e2e (43) tests
 cd backend
+npm run test
 npm run test:e2e
 npm run lint
 npm run build
