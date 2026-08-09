@@ -70,4 +70,10 @@ describe('Auth (e2e)', () => {
   it('rejects unauthenticated access to protected routes', async () => {
     await request(app.getHttpServer()).get('/api/stores').expect(401);
   });
+
+  it('serves a public health endpoint', async () => {
+    const res = await request(app.getHttpServer()).get('/api/health');
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('ok');
+  });
 });

@@ -60,6 +60,32 @@ Open http://localhost:5173 and log in with a demo account.
 | `npm run lint`     | ESLint (backend) + Oxlint (frontend)                   |
 | `npm run build`    | Build both apps                                        |
 
+## Docker deployment
+
+A full deployment runs the backend (API on `:3000`), the frontend (served by Nginx), and a
+persistent SQLite volume — one command:
+
+```bash
+# 1. Set a strong secret (optional; defaults are dev-only)
+echo "JWT_SECRET=$(openssl rand -hex 32)" > .env
+
+# 2. Build and start
+docker compose up -d --build
+
+# 3. (First run only) load demo data
+docker compose exec backend npx prisma db seed
+```
+
+Then open http://localhost:8080 (frontend) or http://localhost:3000/api/health (API health check).
+
+Notes:
+
+- The database is a SQLite file inside the `grs-data` volume (mounted at `/app/data/grs.db` in the
+  backend container). Migrations run automatically on container start.
+- `docker compose down` keeps the data volume; `docker compose down -v` wipes it.
+- To run the backend outside Docker against a file on disk, keep the existing local workflow
+  (`npx prisma db push && npx prisma db seed`).
+
 ## Demo accounts
 
 | Role        | Email                 | Password   |
@@ -72,14 +98,14 @@ Open http://localhost:5173 and log in with a demo account.
 ## Testing
 
 ```bash
-# Backend — unit (16) + e2e (43) tests
+# Backend — unit (16) + e2e (44) tests
 cd backend
 npm run test
 npm run test:e2e
 npm run lint
 npm run build
 
-# Frontend — unit/component tests (175 tests) with coverage
+# Frontend — unit/component tests (177 tests) with coverage
 cd frontend
 npm run test
 npm run test:coverage

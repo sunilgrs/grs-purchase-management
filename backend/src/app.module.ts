@@ -12,6 +12,7 @@ import { PurchaseOrdersModule } from './purchase-orders/purchase-orders.module.j
 import { DeliveriesModule } from './deliveries/deliveries.module.js';
 import { DiscrepanciesModule } from './discrepancies/discrepancies.module.js';
 import { AuditLogsModule } from './audit-logs/audit-logs.module.js';
+import { HealthModule } from './health/health.module.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 
@@ -29,6 +30,7 @@ import { RolesGuard } from './auth/guards/roles.guard.js';
     DeliveriesModule,
     DiscrepanciesModule,
     AuditLogsModule,
+    HealthModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

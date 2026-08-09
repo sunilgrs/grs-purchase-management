@@ -8,6 +8,9 @@ Thumbs.db
 # Dependencies
 node_modules/
 
+# Secrets / env
+.env
+
 # Logs
 *.log
 
