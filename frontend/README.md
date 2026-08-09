@@ -1,32 +1,35 @@
-# React + TypeScript + Vite
+# GRS IPS Purchase Management — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React 19 + Vite 8 + TypeScript + Tailwind CSS + React Router 7 SPA for the purchase
+management system.
 
-Currently, two official plugins are available:
+## Run
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Serves on `http://localhost:5173` and proxies `/api` to the backend at
+`http://localhost:3000`. Start the backend first (see `../backend/README.md`).
+
+## Test
+
+```bash
+npm run test           # 175 tests across 19 files (Vitest + Testing Library + jsdom)
+npm run test:coverage  # with coverage report (thresholds enforced in vitest.config.ts)
+npm run lint           # oxlint
+npm run build          # tsc -b && vite build
+```
+
+## Scripts
+
+| Script              | Description                          |
+| ------------------- | ------------------------------------ |
+| `npm run dev`       | Vite dev server with HMR             |
+| `npm run build`     | Type-check + production build        |
+| `npm run preview`   | Preview the production build         |
+| `npm run test`      | Run the Vitest suite once            |
+| `npm run test:watch`| Run Vitest in watch mode             |
+| `npm run test:coverage` | Run Vitest with coverage report  |
+| `npm run lint`      | Oxlint                               |
