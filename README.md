@@ -97,6 +97,31 @@ Notes:
   Let's Encrypt / Certbot, or your cloud load balancer), then set `CORS_ORIGINS` to the public
   `https://` origin.
 
+## Bulk item import (Excel)
+
+Admins and managers can upload an Excel item master from the **Items** tab
+(**Import Excel** button) to create or update items in bulk.
+
+- **`POST /api/items/import`** — `multipart/form-data`, field `file`
+  (`.xlsx` or `.xls`, max 2 MB). Restricted to `ADMIN`/`MANAGER`.
+- Items are **upserted by Item Code** (matching rows are updated, new codes created).
+- Rows with a missing Code/Name or an unknown Category/Vendor name are skipped and
+  reported in the response summary (`{ created, updated, skipped, errors }`).
+
+Expected columns (first row = headers, order-independent):
+
+| Column        | Required | Notes                                   |
+| ------------- | -------- | --------------------------------------- |
+| Item Code     | Yes      | Unique code, e.g. `ITM-001`             |
+| Item Name     | Yes      | Display name                            |
+| Unit          | No       | Defaults to `Nos`                       |
+| Category      | No       | Must match an existing category name    |
+| Vendor        | No       | Preferred vendor; must match a vendor name |
+| Active        | No       | `yes/no`, `true/false`, `1/0`; default yes |
+
+> Tip: export the existing Items table from the UI to get a starting file, then edit
+> and re-upload it.
+
 ## Demo accounts
 
 | Role        | Email                 | Password   |
@@ -109,14 +134,14 @@ Notes:
 ## Testing
 
 ```bash
-# Backend — unit (24) + e2e (45) tests
+# Backend — unit (31) + e2e (53) tests
 cd backend
 npm run test
 npm run test:e2e
 npm run lint
 npm run build
 
-# Frontend — unit/component tests (177 tests) with coverage
+# Frontend — unit/component tests (179 tests) with coverage
 cd frontend
 npm run test
 npm run test:coverage

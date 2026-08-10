@@ -221,6 +221,28 @@ describe('ItemsPage', () => {
     await waitFor(() => expect(apiMock.delete).toHaveBeenCalledWith('/items/1'))
   })
 
+  it('shows the import button for admins and managers', async () => {
+    mocks.role = 'ADMIN'
+    await renderAsync(<ItemsPage />)
+    expect(screen.getByRole('button', { name: /import excel/i })).toBeInTheDocument()
+
+    mocks.role = 'MANAGER'
+    cleanup()
+    await renderAsync(<ItemsPage />)
+    expect(screen.getByRole('button', { name: /import excel/i })).toBeInTheDocument()
+  })
+
+  it('hides the import button for other roles', async () => {
+    mocks.role = 'STORE_KEEPER'
+    await renderAsync(<ItemsPage />)
+    expect(screen.queryByRole('button', { name: /import excel/i })).not.toBeInTheDocument()
+
+    mocks.role = 'PURCHASER'
+    cleanup()
+    await renderAsync(<ItemsPage />)
+    expect(screen.queryByRole('button', { name: /import excel/i })).not.toBeInTheDocument()
+  })
+
   it('shows dashes and inactive status for an item without a category', async () => {
     mocks.data = {
       '/items': [

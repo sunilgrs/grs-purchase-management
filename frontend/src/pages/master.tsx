@@ -1,5 +1,6 @@
 import { CrudPage } from '../components/CrudPage'
 import type { CrudConfig } from '../components/CrudPage'
+import { ItemImportButton } from '../components/ItemImport'
 import { Badge } from '../components/ui'
 import type { Item, User, Vendor } from '../types'
 import { badgeColor } from '../lib/status'
@@ -51,6 +52,7 @@ function ItemsPage() {
     title: 'Items',
     endpoint: '/items',
     canDelete: true,
+    headerActions: ({ reload }) => <ItemImportButton onDone={reload} />,
     columns: [
       {
         header: 'Item Code',

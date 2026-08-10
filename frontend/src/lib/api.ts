@@ -39,7 +39,8 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string> | undefined),
   }
-  if (options.body) headers['Content-Type'] = 'application/json'
+  if (options.body && !(options.body instanceof FormData))
+    headers['Content-Type'] = 'application/json'
   if (token) headers['Authorization'] = `Bearer ${token}`
 
   const res = await fetch(`/api${path}`, { ...options, headers })

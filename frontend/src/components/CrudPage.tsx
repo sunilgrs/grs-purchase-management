@@ -56,6 +56,7 @@ export interface CrudConfig<T> {
   canDelete?: boolean
   deleteMessage?: (row: T) => string
   extraActions?: (row: T) => ReactNode
+  headerActions?: (helpers: { reload: () => void }) => ReactNode
   createPayload: (values: Record<string, unknown>) => Record<string, unknown>
   updatePayload?: (values: Record<string, unknown>) => Record<string, unknown>
 }
@@ -169,12 +170,15 @@ export function CrudPage<T extends { id: number }>({
         title={config.title}
         subtitle={config.subtitle}
         actions={
-          <Button onClick={openCreate}>
-            <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-            </svg>
-            New
-          </Button>
+          <>
+            {config.headerActions?.({ reload })}
+            <Button onClick={openCreate}>
+              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+              </svg>
+              New
+            </Button>
+          </>
         }
       />
 

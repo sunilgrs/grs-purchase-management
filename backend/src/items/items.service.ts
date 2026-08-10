@@ -1,4 +1,5 @@
 ﻿import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -7,6 +8,19 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { throwIfForeignKeyViolation } from '../common/prisma-errors.js';
 import { CreateItemDto } from './dto/create-item.dto.js';
 import { UpdateItemDto } from './dto/update-item.dto.js';
+import { parseItemExcel } from './item-import.js';
+
+export interface ImportError {
+  row: number;
+  message: string;
+}
+
+export interface ImportResult {
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: ImportError[];
+}
 
 @Injectable()
 export class ItemsService {
@@ -67,5 +81,90 @@ export class ItemsService {
       );
     }
     return { deleted: true, id };
+  }
+
+  async importFromExcel(buffer: Buffer): Promise<ImportResult> {
+    const rows = parseItemExcel(buffer);
+    if (rows.length === 0) {
+      throw new BadRequestException(
+        'No data rows found. Use the first row for headers: Item Code, Item Name, Unit, Category, Vendor, Active.',
+      );
+    }
+
+    const categories = await this.prisma.category.findMany({
+      select: { id: true, name: true },
+    });
+    const vendors = await this.prisma.vendor.findMany({
+      select: { id: true, vendorName: true },
+    });
+    const categoryIdByName = new Map(
+      categories.map((c) => [c.name.toLowerCase(), c.id]),
+    );
+    const vendorIdByName = new Map(
+      vendors.map((v) => [v.vendorName.toLowerCase(), v.id]),
+    );
+
+    const errors: ImportError[] = [];
+    const toImport: CreateItemDto[] = [];
+    for (const row of rows) {
+      if (!row.itemCode) {
+        errors.push({ row: row.rowNumber, message: 'Item Code is required' });
+        continue;
+      }
+      if (!row.itemName) {
+        errors.push({ row: row.rowNumber, message: 'Item Name is required' });
+        continue;
+      }
+      let categoryId: number | undefined;
+      if (row.categoryName) {
+        categoryId = categoryIdByName.get(row.categoryName.toLowerCase());
+        if (categoryId === undefined) {
+          errors.push({
+            row: row.rowNumber,
+            message: `Category "${row.categoryName}" not found`,
+          });
+          continue;
+        }
+      }
+      let preferredVendorId: number | undefined;
+      if (row.vendorName) {
+        preferredVendorId = vendorIdByName.get(row.vendorName.toLowerCase());
+        if (preferredVendorId === undefined) {
+          errors.push({
+            row: row.rowNumber,
+            message: `Vendor "${row.vendorName}" not found`,
+          });
+          continue;
+        }
+      }
+      toImport.push({
+        itemCode: row.itemCode,
+        itemName: row.itemName,
+        unit: row.unit || 'Nos',
+        categoryId,
+        preferredVendorId,
+        active: row.active ?? true,
+      });
+    }
+
+    let created = 0;
+    let updated = 0;
+    for (const dto of toImport) {
+      const existing = await this.prisma.item.findUnique({
+        where: { itemCode: dto.itemCode },
+      });
+      if (existing) {
+        await this.prisma.item.update({
+          where: { id: existing.id },
+          data: dto,
+        });
+        updated++;
+      } else {
+        await this.prisma.item.create({ data: dto });
+        created++;
+      }
+    }
+
+    return { created, updated, skipped: errors.length, errors };
   }
 }
