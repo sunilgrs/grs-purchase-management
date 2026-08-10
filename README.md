@@ -109,7 +109,7 @@ Notes:
 ## Testing
 
 ```bash
-# Backend — unit (16) + e2e (44) tests
+# Backend — unit (24) + e2e (45) tests
 cd backend
 npm run test
 npm run test:e2e
