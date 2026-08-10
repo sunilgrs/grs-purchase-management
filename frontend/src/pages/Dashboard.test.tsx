@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import Dashboard from './Dashboard'
-import type { DashboardSummary } from './Dashboard'
+import type { DashboardSummary, DashboardAnalytics } from './Dashboard'
 
 const mocks = vi.hoisted(() => ({
   user: {
@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
     permissions: null,
   },
   data: null as DashboardSummary | null,
+  analytics: null as DashboardAnalytics | null,
   loading: false,
 }))
 
@@ -23,8 +24,8 @@ vi.mock('../auth/useAuth', () => ({
 }))
 
 vi.mock('../hooks/useFetch', () => ({
-  useFetch: () => ({
-    data: mocks.data,
+  useFetch: (path: string) => ({
+    data: path === '/dashboard/analytics' ? mocks.analytics : mocks.data,
     loading: mocks.loading,
     error: null,
     reload: () => {},
@@ -46,12 +47,23 @@ const summary = (overrides: Partial<DashboardSummary> = {}): DashboardSummary =>
   ...overrides,
 })
 
+const analytics = (overrides: Partial<DashboardAnalytics> = {}): DashboardAnalytics => ({
+  spendTrend: [],
+  poStatus: [],
+  discrepancyTypes: [],
+  priorityCounts: [],
+  topVendors: [],
+  topItems: [],
+  ...overrides,
+})
+
 const renderPage = () => render(<MemoryRouter><Dashboard /></MemoryRouter>)
 
 describe('Dashboard', () => {
   beforeEach(() => {
     mocks.loading = false
     mocks.data = summary()
+    mocks.analytics = analytics()
   })
 
   afterEach(() => {
@@ -142,5 +154,37 @@ describe('Dashboard', () => {
     renderPage()
     expect(screen.queryByText(/recent purchase orders/i)).not.toBeInTheDocument()
     expect(document.querySelector('.animate-spin')).not.toBeNull()
+  })
+
+  it('renders the analytics section', () => {
+    mocks.analytics = analytics({
+      spendTrend: [{ month: 'Aug', spend: 2500 }],
+      poStatus: [{ status: 'COMPLETED', count: 1 }],
+    })
+    renderPage()
+    expect(screen.getByRole('heading', { name: /analytics/i })).toBeInTheDocument()
+    expect(screen.getByText(/monthly spend/i)).toBeInTheDocument()
+    expect(screen.getByText(/purchase order status/i)).toBeInTheDocument()
+    expect(screen.getByText(/top vendors by spend/i)).toBeInTheDocument()
+    expect(screen.getByText(/top items by spend/i)).toBeInTheDocument()
+  })
+
+  it('shows empty states when there is no analytics data', () => {
+    renderPage()
+    expect(screen.getByText(/no purchase spend yet/i)).toBeInTheDocument()
+    expect(screen.getByText(/no status data yet/i)).toBeInTheDocument()
+    expect(screen.getByText(/no discrepancies yet/i)).toBeInTheDocument()
+  })
+
+  it('lists top vendors and items from the analytics data', () => {
+    mocks.analytics = analytics({
+      topVendors: [{ vendorName: 'Acme Traders', spend: 12000 }],
+      topItems: [{ itemName: 'Cement', spend: 8000 }],
+    })
+    renderPage()
+    expect(screen.getByText('Acme Traders')).toBeInTheDocument()
+    expect(screen.getByText('Cement')).toBeInTheDocument()
+    expect(screen.getByText('₹12,000')).toBeInTheDocument()
+    expect(screen.getByText('₹8,000')).toBeInTheDocument()
   })
 })

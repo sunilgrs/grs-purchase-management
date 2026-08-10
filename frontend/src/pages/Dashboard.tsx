@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Badge, Card, Spinner } from '../components/ui'
+import { BarChart, ChartCard, DonutChart, RankList } from '../components/charts'
 import { useFetch } from '../hooks/useFetch'
 import { formatDate } from '../lib/format'
 import { badgeColor } from '../lib/status'
@@ -28,6 +29,15 @@ export interface DashboardSummary {
   recentPos: RecentPo[]
 }
 
+export interface DashboardAnalytics {
+  spendTrend: { month: string; spend: number }[]
+  poStatus: { status: string; count: number }[]
+  discrepancyTypes: { type: string; count: number }[]
+  priorityCounts: { priority: string; count: number }[]
+  topVendors: { vendorName: string; spend: number }[]
+  topItems: { itemName: string; spend: number }[]
+}
+
 function StatCard({
   label,
   value,
@@ -53,6 +63,9 @@ function StatCard({
 export default function Dashboard() {
   const { user } = useAuth()
   const summary = useFetch<DashboardSummary>('/dashboard/summary')
+  const analytics = useFetch<DashboardAnalytics>('/dashboard/analytics')
+
+  const money = (v: number) => `₹${v.toLocaleString('en-IN')}`
 
   return (
     <div>
@@ -129,6 +142,66 @@ export default function Dashboard() {
               </div>
             )}
           </Card>
+
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-base font-semibold text-emerald-950">Analytics</h2>
+              <p className="mt-0.5 text-sm text-slate-500">Procurement trends across purchase orders, deliveries and discrepancies.</p>
+            </div>
+            {analytics.loading || !analytics.data ? (
+              <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white py-16">
+                <Spinner className="h-8 w-8" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <ChartCard title="Monthly Spend" className="lg:col-span-2">
+                  <BarChart
+                    data={analytics.data.spendTrend.map((m) => ({ label: m.month, value: m.spend }))}
+                    title="Last 6 months"
+                    formatValue={money}
+                    empty="No purchase spend yet"
+                  />
+                </ChartCard>
+                <ChartCard title="Purchase Order Status">
+                  <DonutChart
+                    data={analytics.data.poStatus.map((s) => ({ label: s.status, value: s.count }))}
+                    title="Open vs completed"
+                    empty="No status data yet"
+                  />
+                </ChartCard>
+                <ChartCard title="Top Vendors by Spend">
+                  <RankList
+                    data={analytics.data.topVendors.map((v) => ({ label: v.vendorName, value: v.spend }))}
+                    title="Vendors with recorded spend"
+                    formatValue={money}
+                    empty="No spend recorded yet"
+                  />
+                </ChartCard>
+                <ChartCard title="Top Items by Spend">
+                  <RankList
+                    data={analytics.data.topItems.map((v) => ({ label: v.itemName, value: v.spend }))}
+                    title="Items with recorded spend"
+                    formatValue={money}
+                    empty="No spend recorded yet"
+                  />
+                </ChartCard>
+                <ChartCard title="Discrepancies by Type">
+                  <DonutChart
+                    data={analytics.data.discrepancyTypes.map((d) => ({ label: d.type, value: d.count }))}
+                    title="How discrepancies break down"
+                    empty="No discrepancies yet"
+                  />
+                </ChartCard>
+                <ChartCard title="Requirements by Priority" className="lg:col-span-2">
+                  <DonutChart
+                    data={analytics.data.priorityCounts.map((p) => ({ label: p.priority, value: p.count }))}
+                    title="Requested priority mix"
+                    empty="No requirements yet"
+                  />
+                </ChartCard>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
