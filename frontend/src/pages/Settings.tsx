@@ -89,7 +89,7 @@ export default function SettingsPage() {
             {list.map((user) => (
               <tr key={user.id} className="align-top">
                 <td className="px-4 py-3">
-                  <p className="font-medium text-slate-900">{user.name}</p>
+                  <p className="font-medium text-emerald-950">{user.name}</p>
                   <p className="text-xs text-slate-500">{user.mobile}</p>
                   <div className="mt-1">
                     <Badge color={badgeColor(user.role)}>{user.role}</Badge>
@@ -100,7 +100,7 @@ export default function SettingsPage() {
                 </td>
                 <td className="px-4 py-3">
                   {isDefault(user.id) && (
-                    <p className="mb-2 text-xs font-medium text-blue-600">
+                    <p className="mb-2 text-xs font-medium text-emerald-600">
                       All tabs allowed (role default)
                     </p>
                   )}
@@ -117,13 +117,13 @@ export default function SettingsPage() {
                             return (
                               <label
                                 key={feature.key}
-                                className="flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
+                                className="flex cursor-pointer items-center gap-1.5 rounded-md border border-emerald-100 px-2.5 py-1.5 text-xs text-slate-700 hover:bg-emerald-50"
                               >
                                 <input
                                   type="checkbox"
                                   checked={checked}
                                   onChange={() => toggle(user.id, feature.key)}
-                                  className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                  className="h-3.5 w-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                                 />
                                 {feature.label}
                               </label>

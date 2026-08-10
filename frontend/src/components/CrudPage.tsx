@@ -218,7 +218,7 @@ export function CrudPage<T extends { id: number }>({
       <Card>
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <Spinner className="h-8 w-8 text-blue-600" />
+            <Spinner className="h-8 w-8 text-emerald-600" />
           </div>
         ) : !visibleData || visibleData.length === 0 ? (
           <EmptyState
@@ -232,7 +232,7 @@ export function CrudPage<T extends { id: number }>({
         ) : (
           <Table headers={[...config.columns.map((c) => c.header), <span key="actions"></span>]}>
             {visibleData.map((row) => (
-              <tr key={row.id} className="hover:bg-slate-50">
+              <tr key={row.id} className="hover:bg-emerald-50/70">
                 {config.columns.map((col, i) => (
                   <td key={i} className="px-4 py-3">
                     {col.render(row)}
@@ -283,7 +283,7 @@ export function CrudPage<T extends { id: number }>({
                     type="checkbox"
                     checked={Boolean(value)}
                     onChange={(e) => set(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
                   {field.label}
                 </label>
@@ -315,7 +315,7 @@ export function CrudPage<T extends { id: number }>({
                     rows={3}
                     value={String(value ?? '')}
                     onChange={(e) => set(e.target.value)}
-                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                   />
                 </label>
               )

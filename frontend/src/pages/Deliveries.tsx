@@ -37,8 +37,8 @@ export default function DeliveriesPage() {
         ) : (
           <Table headers={['PO', 'Delivery Date', 'Received By', 'Status', 'Items', 'Issues', '']}>
             {data.map((d) => (
-              <tr key={d.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3 font-mono text-xs font-medium text-slate-900">
+              <tr key={d.id} className="hover:bg-emerald-50/70">
+                <td className="px-4 py-3 font-mono text-xs font-medium text-emerald-950">
                   {d.PurchaseOrder?.poNumber ?? '—'}
                 </td>
                 <td className="px-4 py-3">{formatDate(d.deliveryDate)}</td>
@@ -93,7 +93,7 @@ export default function DeliveriesPage() {
               {(viewing.items ?? []).map((it) => (
                 <tr key={it.id}>
                   <td className="px-4 py-2.5">
-                    <span className="font-medium text-slate-900">{it.Item?.itemName ?? 'Item'}</span>
+                    <span className="font-medium text-emerald-950">{it.Item?.itemName ?? 'Item'}</span>
                     <span className="ml-2 font-mono text-xs text-slate-400">{it.Item?.itemCode}</span>
                   </td>
                   <td className="px-4 py-2.5">{it.Item?.unit ?? '—'}</td>

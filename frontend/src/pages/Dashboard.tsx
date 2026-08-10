@@ -43,7 +43,7 @@ function StatCard({
     <Link to={to} className="block">
       <Card className="px-5 py-4 transition-shadow hover:shadow-md">
         <div className={`mb-2 h-1.5 w-8 rounded-full ${accent}`} />
-        <p className="text-2xl font-semibold text-slate-900">{value}</p>
+        <p className="text-2xl font-semibold text-emerald-950">{value}</p>
         <p className="mt-0.5 text-sm text-slate-500">{label}</p>
       </Card>
     </Link>
@@ -57,7 +57,7 @@ export default function Dashboard() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-emerald-950">Dashboard</h1>
         <p className="mt-1 text-sm text-slate-500">
           Welcome back, {user?.name}. Here’s an overview of procurement activity.
         </p>
@@ -93,7 +93,7 @@ export default function Dashboard() {
               count={summary.data.inProgressPos}
               hint="Partially or not yet delivered"
               to="/purchase-orders"
-              color={summary.data.inProgressPos > 0 ? 'text-blue-600' : 'text-slate-400'}
+              color={summary.data.inProgressPos > 0 ? 'text-emerald-600' : 'text-slate-400'}
             />
             <AlertCard
               title="Open Discrepancies"
@@ -106,7 +106,7 @@ export default function Dashboard() {
 
           <Card>
             <div className="border-b border-slate-200 px-5 py-4">
-              <h2 className="text-base font-semibold text-slate-900">Recent Purchase Orders</h2>
+              <h2 className="text-base font-semibold text-emerald-950">Recent Purchase Orders</h2>
             </div>
             {summary.data.recentPos.length === 0 ? (
               <p className="px-5 py-10 text-center text-sm text-slate-400">No purchase orders yet.</p>
@@ -115,7 +115,7 @@ export default function Dashboard() {
                 {summary.data.recentPos.map((po) => (
                   <div key={po.id} className="flex items-center justify-between gap-3 px-5 py-3">
                     <div className="min-w-0">
-                      <p className="font-mono text-xs font-medium text-slate-900">{po.poNumber}</p>
+                      <p className="font-mono text-xs font-medium text-emerald-950">{po.poNumber}</p>
                       <p className="truncate text-sm text-slate-500">
                         {po.Vendor?.vendorName ?? '—'} · {po.Requirement?.requirementNo ?? ''}
                       </p>

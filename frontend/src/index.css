@@ -7,6 +7,6 @@
 }
 
 body {
-  @apply bg-slate-100 text-slate-800 antialiased;
+  @apply bg-[#f6faf7] text-emerald-950 antialiased;
   font-family: var(--font-sans);
 }

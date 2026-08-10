@@ -96,9 +96,9 @@ export function ItemImportButton({ onDone }: { onDone: () => void }) {
                 <p className="text-lg font-semibold text-green-700">{summary.created}</p>
                 <p className="text-xs text-green-600">Created</p>
               </div>
-              <div className="rounded-md bg-blue-50 px-3 py-2 text-center">
-                <p className="text-lg font-semibold text-blue-700">{summary.updated}</p>
-                <p className="text-xs text-blue-600">Updated</p>
+              <div className="rounded-md bg-emerald-50 px-3 py-2 text-center">
+                <p className="text-lg font-semibold text-emerald-700">{summary.updated}</p>
+                <p className="text-xs text-emerald-600">Updated</p>
               </div>
               <div className="rounded-md bg-amber-50 px-3 py-2 text-center">
                 <p className="text-lg font-semibold text-amber-700">{summary.skipped}</p>

@@ -3,11 +3,11 @@ import { useEffect } from 'react'
 import type { StatusColor } from '../types'
 
 const btnVariants: Record<string, string> = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500',
-  secondary: 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus-visible:ring-slate-400',
+  primary: 'bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-500',
+  secondary: 'bg-white text-slate-700 border border-slate-300 hover:bg-emerald-50/70 focus-visible:ring-emerald-300',
   danger: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500',
-  ghost: 'text-slate-600 hover:bg-slate-100 focus-visible:ring-slate-400',
-  success: 'bg-green-600 text-white hover:bg-green-700 focus-visible:ring-green-500',
+  ghost: 'text-slate-600 hover:bg-emerald-50 focus-visible:ring-emerald-300',
+  success: 'bg-teal-600 text-white hover:bg-teal-700 focus-visible:ring-teal-500',
 }
 
 export function Button({
@@ -33,7 +33,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 ${btnVariants[variant]} ${sizes} ${className}`}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 ${btnVariants[variant]} ${sizes} ${className}`}
     >
       {children}
     </button>
@@ -56,10 +56,10 @@ export function Input({
       )}
       <input
         {...props}
-        className={`w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none placeholder:text-slate-400 focus:ring-2 ${
+        className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none placeholder:text-slate-400 focus:ring-2 ${
           error
             ? 'border-red-400 focus:border-red-500 focus:ring-red-100'
-            : 'border-slate-300 focus:border-blue-500 focus:ring-blue-100'
+            : 'border-slate-300 focus:border-emerald-500 focus:ring-emerald-100'
         } ${className}`}
       />
       {error && <span className="mt-1 block text-xs text-red-600">{error}</span>}
@@ -84,10 +84,10 @@ export function Select({
       )}
       <select
         {...props}
-        className={`w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none focus:ring-2 ${
+        className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none focus:ring-2 ${
           error
             ? 'border-red-400 focus:border-red-500 focus:ring-red-100'
-            : 'border-slate-300 focus:border-blue-500 focus:ring-blue-100'
+            : 'border-slate-300 focus:border-emerald-500 focus:ring-emerald-100'
         } ${className}`}
       >
         {children}
@@ -97,7 +97,7 @@ export function Select({
   )
 }
 
-export function Spinner({ className = 'h-5 w-5 text-blue-600' }: { className?: string }) {
+export function Spinner({ className = 'h-5 w-5 text-emerald-600' }: { className?: string }) {
   return (
     <svg className={`animate-spin ${className}`} viewBox="0 0 24 24" fill="none">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -114,7 +114,7 @@ export function Card({
   className?: string
 }) {
   return (
-    <div className={`rounded-lg border border-slate-200 bg-white shadow-sm ${className}`}>
+    <div className={`rounded-2xl border border-emerald-100 bg-white shadow-sm ${className}`}>
       {children}
     </div>
   )
@@ -132,7 +132,7 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
+        <h1 className="text-2xl font-semibold text-emerald-950">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
@@ -142,7 +142,7 @@ export function PageHeader({
 
 const statusStyles: Record<StatusColor, string> = {
   slate: 'bg-slate-100 text-slate-700 ring-slate-200',
-  green: 'bg-green-50 text-green-700 ring-green-200',
+  green: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
   amber: 'bg-amber-50 text-amber-700 ring-amber-200',
   red: 'bg-red-50 text-red-700 ring-red-200',
   blue: 'bg-blue-50 text-blue-700 ring-blue-200',
@@ -168,7 +168,7 @@ export function Badge({
 export function EmptyState({ title, hint }: { title: string; hint?: string }) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-2xl">
+      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-2xl">
         🗂️
       </div>
       <p className="text-sm font-medium text-slate-700">{title}</p>
@@ -197,13 +197,13 @@ export function Table({
 }) {
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-slate-200 text-sm">
-        <thead className="bg-slate-50">
+      <table className="min-w-[640px] w-full divide-y divide-slate-200 text-sm lg:min-w-full">
+        <thead className="bg-emerald-50/80">
           <tr>
             {headers.map((h, i) => (
               <th
                 key={i}
-                className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-emerald-900/60"
               >
                 {h}
               </th>
@@ -252,11 +252,11 @@ export function Modal({
           wide ? 'max-w-3xl' : 'max-w-xl'
         }`}
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-          <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+        <div className="flex items-center justify-between border-b border-emerald-100 px-5 py-4">
+          <h2 className="text-base font-semibold text-emerald-950">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            className="rounded-md p-1 text-slate-400 hover:bg-emerald-50 hover:text-emerald-700"
           >
             <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -265,7 +265,7 @@ export function Modal({
         </div>
         <div className="overflow-y-auto px-5 py-4">{children}</div>
         {footer && (
-          <div className="flex items-center justify-end gap-2 border-t border-slate-200 px-5 py-3">
+          <div className="flex items-center justify-end gap-2 border-t border-emerald-100 px-5 py-3">
             {footer}
           </div>
         )}

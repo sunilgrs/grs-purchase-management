@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 
@@ -34,8 +35,18 @@ const navSections = [
 export default function Layout() {
   const { user, logout, hasFeature } = useAuth()
   const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
 
   const handleLogout = () => {
+    setOpen(false)
     logout()
     navigate('/login')
   }
@@ -49,23 +60,67 @@ export default function Layout() {
 
   const settingsVisible = user?.role === 'ADMIN'
 
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+      isActive
+        ? 'bg-emerald-100 text-emerald-900 ring-1 ring-inset ring-emerald-600/20'
+        : 'text-emerald-900/70 hover:bg-emerald-50 hover:text-emerald-900'
+    }`
+
   return (
-    <div className="flex min-h-screen">
-      <aside className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-slate-900">
-        <div className="flex items-center gap-2.5 border-b border-slate-800 px-5 py-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-600 text-sm font-bold text-white">
+    <div className="min-h-screen">
+      <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center gap-3 border-b border-emerald-100 bg-white px-4 lg:hidden">
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Open menu"
+          className="rounded-md p-1.5 text-emerald-900/70 hover:bg-emerald-50"
+        >
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-[11px] font-bold text-emerald-800 ring-1 ring-emerald-200">
+            GRS
+          </div>
+        </div>
+      </header>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-emerald-950/40 lg:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-emerald-100 bg-white transition-transform duration-200 lg:translate-x-0 ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex items-center gap-2.5 border-b border-emerald-100 px-5 py-4">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-sm font-bold text-emerald-800 ring-1 ring-emerald-200">
             GRS
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-semibold text-white">IPS Purchase Manager</p>
-            <p className="text-xs text-slate-400">v1.0.0</p>
+            <p className="text-sm font-semibold text-emerald-950">IPS Purchase Manager</p>
+            <p className="text-xs text-emerald-900/40">v1.0.0</p>
           </div>
+          <button
+            onClick={() => setOpen(false)}
+            aria-label="Close menu"
+            className="ml-auto rounded-md p-1.5 text-emerald-900/40 hover:bg-emerald-50 hover:text-emerald-700 lg:hidden"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+            </svg>
+          </button>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           {visibleSections.map((section) => (
             <div key={section.label} className="mb-5">
-              <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-emerald-900/40">
                 {section.label}
               </p>
               <ul className="space-y-0.5">
@@ -74,13 +129,8 @@ export default function Layout() {
                     <NavLink
                       to={link.to}
                       end={link.to === '/'}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                          isActive
-                            ? 'bg-blue-600 text-white'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                        }`
-                      }
+                      onClick={() => setOpen(false)}
+                      className={linkClass}
                     >
                       <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                         {link.icon.split(' ').map((d, i) => (
@@ -96,20 +146,15 @@ export default function Layout() {
           ))}
           {settingsVisible && (
             <div className="mb-5">
-              <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-emerald-900/40">
                 Administration
               </p>
               <ul className="space-y-0.5">
                 <li>
                   <NavLink
                     to="/settings"
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                        isActive
-                          ? 'bg-blue-600 text-white'
-                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                      }`
-                    }
+                    onClick={() => setOpen(false)}
+                    className={linkClass}
                   >
                     <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                       <path d="M12 8a4 4 0 100 8 4 4 0 000-8z" strokeLinecap="round" strokeLinejoin="round" />
@@ -123,19 +168,19 @@ export default function Layout() {
           )}
         </nav>
 
-        <div className="border-t border-slate-800 px-4 py-3">
+        <div className="border-t border-emerald-100 px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-700 text-xs font-semibold text-white">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-600 to-teal-600 text-xs font-semibold text-white">
               {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
             </div>
             <div className="min-w-0 flex-1 leading-tight">
-              <p className="truncate text-sm font-medium text-white">{user?.name}</p>
-              <p className="truncate text-xs text-slate-400">{user?.role}</p>
+              <p className="truncate text-sm font-medium text-emerald-950">{user?.name}</p>
+              <p className="truncate text-xs text-emerald-900/50">{user?.role}</p>
             </div>
             <button
               onClick={handleLogout}
               title="Logout"
-              className="rounded-md p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
+              className="rounded-md p-1.5 text-emerald-900/40 hover:bg-emerald-50 hover:text-emerald-700"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                 <path d="M15 12H3m0 0l4-4m-4 4l4 4" strokeLinecap="round" strokeLinejoin="round" />
@@ -146,7 +191,7 @@ export default function Layout() {
         </div>
       </aside>
 
-      <main className="ml-64 flex-1 px-8 py-6">
+      <main className="px-4 py-5 pt-16 lg:ml-64 lg:px-8 lg:py-6 lg:pt-6">
         <Outlet />
       </main>
     </div>

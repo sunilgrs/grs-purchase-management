@@ -117,8 +117,8 @@ export default function DiscrepanciesPage() {
         ) : (
           <Table headers={['PO', 'Delivery', 'Item', 'Type', 'Qty', 'Status', 'Reported', '']}>
             {data.map((d) => (
-              <tr key={d.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3 font-mono text-xs font-medium text-slate-900">
+              <tr key={d.id} className="hover:bg-emerald-50/70">
+                <td className="px-4 py-3 font-mono text-xs font-medium text-emerald-950">
                   {d.PurchaseOrder?.poNumber ?? '—'}
                 </td>
                 <td className="px-4 py-3">{formatDate(d.Delivery?.deliveryDate)}</td>
@@ -264,7 +264,7 @@ export default function DiscrepanciesPage() {
               rows={3}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
 
@@ -334,7 +334,7 @@ function DiscrepancyReviewModal({
               rows={3}
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
           <div className="flex items-center justify-end gap-2">

@@ -21,7 +21,7 @@ export default function AuditLogsPage() {
         ) : (
           <Table headers={['When', 'Entity', 'Action', 'Description', 'Performed By']}>
             {data.map((log) => (
-              <tr key={log.id} className="hover:bg-slate-50">
+              <tr key={log.id} className="hover:bg-emerald-50/70">
                 <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-500">{formatDateTime(log.createdAt)}</td>
                 <td className="px-4 py-3">
                   <Badge color="blue">{log.entityType}</Badge>

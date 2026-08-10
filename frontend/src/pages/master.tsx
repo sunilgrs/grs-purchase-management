@@ -13,7 +13,7 @@ function VendorsPage() {
     canDelete: true,
     isActive: (r) => Boolean(r.active),
     columns: [
-      { header: 'Vendor', render: (r) => <span className="font-medium text-slate-900">{r.vendorName}</span> },
+      { header: 'Vendor', render: (r) => <span className="font-medium text-emerald-950">{r.vendorName}</span> },
       { header: 'Contact', render: (r) => r.contactPerson || '—' },
       { header: 'Mobile', render: (r) => r.mobile || '—' },
       { header: 'Email', render: (r) => r.email || '—' },
@@ -58,9 +58,9 @@ function ItemsPage() {
     columns: [
       {
         header: 'Item Code',
-        render: (r) => <span className="font-mono text-xs font-medium text-slate-900">{r.itemCode}</span>,
+        render: (r) => <span className="font-mono text-xs font-medium text-emerald-950">{r.itemCode}</span>,
       },
-      { header: 'Name', render: (r) => <span className="font-medium text-slate-900">{r.itemName}</span> },
+      { header: 'Name', render: (r) => <span className="font-medium text-emerald-950">{r.itemName}</span> },
       { header: 'Category', render: (r) => r.Category?.name || '—' },
       { header: 'Unit', render: (r) => r.unit },
       {
@@ -109,7 +109,7 @@ function UsersPage() {
     canDelete: user?.role === 'ADMIN',
     isActive: (r) => r.status === 'ACTIVE',
     columns: [
-      { header: 'Name', render: (r) => <span className="font-medium text-slate-900">{r.name}</span> },
+      { header: 'Name', render: (r) => <span className="font-medium text-emerald-950">{r.name}</span> },
       { header: 'Mobile', render: (r) => r.mobile },
       { header: 'Email', render: (r) => r.email || '—' },
       { header: 'Role', render: (r) => <Badge color={badgeColor(r.role)}>{r.role}</Badge> },

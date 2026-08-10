@@ -183,8 +183,8 @@ export default function PurchaseOrdersPage() {
         ) : (
           <Table headers={['PO #', 'Vendor', 'Requirement', 'Expected', 'Status', 'Items', '']}>
             {data.map((po) => (
-              <tr key={po.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3 font-mono text-xs font-medium text-slate-900">{po.poNumber}</td>
+              <tr key={po.id} className="hover:bg-emerald-50/70">
+                <td className="px-4 py-3 font-mono text-xs font-medium text-emerald-950">{po.poNumber}</td>
                 <td className="px-4 py-3 font-medium text-slate-800">{po.Vendor?.vendorName ?? '—'}</td>
                 <td className="px-4 py-3 font-mono text-xs text-slate-500">{po.Requirement?.requirementNo ?? '—'}</td>
                 <td className="px-4 py-3">{formatDate(po.expectedDate)}</td>
@@ -239,7 +239,7 @@ export default function PurchaseOrdersPage() {
             </p>
           )}
           {selectedReq && !reqFetching && (
-            <p className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-700">
+            <p className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
               Items pre-filled from {selectedReq.requirementNo} ({selectedReq.priority} priority). Adjust quantities if needed.
             </p>
           )}
@@ -252,7 +252,7 @@ export default function PurchaseOrdersPage() {
               rows={2}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
 
@@ -293,7 +293,7 @@ export default function PurchaseOrdersPage() {
               rows={2}
               value={deliverForm.remarks}
               onChange={(e) => setDeliverForm({ ...deliverForm, remarks: e.target.value })}
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
 
@@ -344,7 +344,7 @@ function PODetail({ po, onClose }: { po: PurchaseOrder | null; onClose: () => vo
             {(po.items ?? []).map((it) => (
               <tr key={it.id}>
                 <td className="px-4 py-2.5">
-                  <span className="font-medium text-slate-900">{it.Item?.itemName ?? 'Item'}</span>
+                  <span className="font-medium text-emerald-950">{it.Item?.itemName ?? 'Item'}</span>
                   <span className="ml-2 font-mono text-xs text-slate-400">{it.Item?.itemCode}</span>
                 </td>
                 <td className="px-4 py-2.5">{it.Item?.unit ?? '—'}</td>
@@ -355,10 +355,10 @@ function PODetail({ po, onClose }: { po: PurchaseOrder | null; onClose: () => vo
               </tr>
             ))}
             <tr className="bg-slate-50">
-              <td className="px-4 py-2.5 text-right font-semibold text-slate-900" colSpan={5}>
+              <td className="px-4 py-2.5 text-right font-semibold text-emerald-950" colSpan={5}>
                 Total
               </td>
-              <td className="px-4 py-2.5 font-semibold text-slate-900">₹{formatNumber(total, 0)}</td>
+              <td className="px-4 py-2.5 font-semibold text-emerald-950">₹{formatNumber(total, 0)}</td>
             </tr>
           </Table>
         </div>

@@ -139,8 +139,8 @@ export default function RequirementsPage() {
         ) : (
           <Table headers={['Req #', 'Store', 'Requested By', 'Required Date', 'Priority', 'Status', 'Items', '']}>
             {data.map((r) => (
-              <tr key={r.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3 font-mono text-xs font-medium text-slate-900">{r.requirementNo}</td>
+              <tr key={r.id} className="hover:bg-emerald-50/70">
+                <td className="px-4 py-3 font-mono text-xs font-medium text-emerald-950">{r.requirementNo}</td>
                 <td className="px-4 py-3 font-medium text-slate-800">{storeName(r.storeId)}</td>
                 <td className="px-4 py-3">{userName(r.requestedById)}</td>
                 <td className="px-4 py-3">{formatDate(r.requiredDate)}</td>
@@ -253,7 +253,7 @@ export default function RequirementsPage() {
               rows={2}
               value={form.remarks}
               onChange={(e) => setForm({ ...form, remarks: e.target.value })}
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
 
@@ -357,7 +357,7 @@ function StoreManagerReviewModal({
               rows={3}
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
           <div className="flex items-center justify-end gap-2">
@@ -401,7 +401,7 @@ function ManagerRejectModal({
               required
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
           <div className="flex items-center justify-end gap-2">
@@ -526,7 +526,7 @@ function ManagerApproveModal({
               rows={2}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
 
@@ -742,7 +742,7 @@ export function RequirementDetail({
             {(requirement.items ?? []).map((it) => (
               <tr key={it.id}>
                 <td className="px-4 py-2.5">
-                  <span className="font-medium text-slate-900">{it.Item?.itemName ?? 'Item'}</span>
+                  <span className="font-medium text-emerald-950">{it.Item?.itemName ?? 'Item'}</span>
                   <span className="ml-2 font-mono text-xs text-slate-400">{it.Item?.itemCode}</span>
                 </td>
                 <td className="px-4 py-2.5">{it.Item?.unit ?? '—'}</td>
