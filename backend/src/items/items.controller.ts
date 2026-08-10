@@ -16,8 +16,10 @@ import { ItemsService } from './items.service.js';
 import { CreateItemDto } from './dto/create-item.dto.js';
 import { UpdateItemDto } from './dto/update-item.dto.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
+import { Feature } from '../auth/decorators/feature.decorator.js';
 
 @Controller('items')
+@Feature('items')
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 

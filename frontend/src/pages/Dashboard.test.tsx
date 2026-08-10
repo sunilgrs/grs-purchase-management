@@ -2,11 +2,19 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import Dashboard from './Dashboard'
-import type { Delivery, Discrepancy, Item, PurchaseOrder, Requirement, User, Vendor } from '../types'
+import type { DashboardSummary } from './Dashboard'
 
 const mocks = vi.hoisted(() => ({
-  user: { id: 1, name: 'Test User', mobile: '9999999999', email: null, role: 'MANAGER', status: 'ACTIVE' },
-  data: {} as Record<string, unknown>,
+  user: {
+    id: 1,
+    name: 'Test User',
+    mobile: '9999999999',
+    email: null,
+    role: 'MANAGER',
+    status: 'ACTIVE',
+    permissions: null,
+  },
+  data: null as DashboardSummary | null,
   loading: false,
 }))
 
@@ -15,45 +23,27 @@ vi.mock('../auth/useAuth', () => ({
 }))
 
 vi.mock('../hooks/useFetch', () => ({
-  useFetch: (path: string) => ({
-    data: mocks.data[path] ?? null,
+  useFetch: () => ({
+    data: mocks.data,
     loading: mocks.loading,
     error: null,
     reload: () => {},
   }),
 }))
 
-const requirement = (id: number, status: string): Requirement => ({
-  id,
-  requirementNo: `REQ-${id}`,
-  storeId: 1,
-  requestedById: 1,
-  requiredDate: '2026-09-01T00:00:00Z',
-  priority: 'NORMAL',
-  status,
-  approvedById: null,
-  remarks: null,
-  createdAt: '2026-08-01T00:00:00Z',
-  updatedAt: '2026-08-01T00:00:00Z',
-  items: [],
-  _count: { items: 0, PurchaseOrder: 0 },
-})
-
-const po = (id: number, status: string): PurchaseOrder => ({
-  id,
-  poNumber: `PO-${1000 + id}`,
-  requirementId: 1,
-  vendorId: 1,
-  orderDate: '2026-08-01T00:00:00Z',
-  expectedDate: '2026-09-01T00:00:00Z',
-  status,
-  notes: null,
-  createdAt: '2026-08-01T00:00:00Z',
-  updatedAt: '2026-08-01T00:00:00Z',
-  Vendor: { id: 1, vendorName: 'Acme Supplies' },
-  Requirement: { id: 1, requirementNo: 'REQ-1', status },
-  items: [],
-  _count: { items: 0, Delivery: 0 },
+const summary = (overrides: Partial<DashboardSummary> = {}): DashboardSummary => ({
+  vendors: 0,
+  items: 0,
+  users: 0,
+  requirements: 0,
+  openRequirements: 0,
+  purchaseOrders: 0,
+  inProgressPos: 0,
+  deliveries: 0,
+  discrepancies: 0,
+  openDiscrepancies: 0,
+  recentPos: [],
+  ...overrides,
 })
 
 const renderPage = () => render(<MemoryRouter><Dashboard /></MemoryRouter>)
@@ -61,15 +51,7 @@ const renderPage = () => render(<MemoryRouter><Dashboard /></MemoryRouter>)
 describe('Dashboard', () => {
   beforeEach(() => {
     mocks.loading = false
-    mocks.data = {
-      '/vendors': [] as Vendor[],
-      '/items': [] as Item[],
-      '/users': [] as User[],
-      '/requirements': [] as Requirement[],
-      '/purchase-orders': [] as PurchaseOrder[],
-      '/deliveries': [] as Delivery[],
-      '/discrepancies': [] as Discrepancy[],
-    }
+    mocks.data = summary()
   })
 
   afterEach(() => {
@@ -82,13 +64,15 @@ describe('Dashboard', () => {
   })
 
   it('shows counts on the stat cards', () => {
-    mocks.data['/vendors'] = [{ id: 1 }, { id: 2 }] as unknown as Vendor[]
-    mocks.data['/items'] = [{ id: 1 }, { id: 2 }, { id: 3 }] as unknown as Item[]
-    mocks.data['/users'] = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }] as unknown as User[]
-    mocks.data['/requirements'] = [requirement(1, 'COMPLETED'), requirement(2, 'REJECTED'), requirement(3, 'DRAFT')]
-    mocks.data['/purchase-orders'] = [po(1, 'PENDING'), po(2, 'COMPLETED')]
-    mocks.data['/deliveries'] = [{ id: 1 }] as unknown as Delivery[]
-    mocks.data['/discrepancies'] = [{ id: 1 }, { id: 2 }] as unknown as Discrepancy[]
+    mocks.data = summary({
+      vendors: 2,
+      items: 3,
+      users: 4,
+      requirements: 3,
+      purchaseOrders: 2,
+      deliveries: 1,
+      discrepancies: 2,
+    })
     renderPage()
 
     expect(screen.getByRole('link', { name: /^2 Vendors/ })).toBeInTheDocument()
@@ -100,20 +84,15 @@ describe('Dashboard', () => {
     expect(screen.getByRole('link', { name: /^2 Discrepancies/ })).toBeInTheDocument()
   })
 
-  it('counts only open requirements, POs and discrepancies', () => {
-    mocks.data['/requirements'] = [
-      requirement(1, 'COMPLETED'),
-      requirement(2, 'REJECTED'),
-      requirement(3, 'DRAFT'),
-      requirement(4, 'SUBMITTED'),
-      requirement(5, 'MATERIAL_RECEIVED'),
-    ]
-    mocks.data['/purchase-orders'] = [po(1, 'COMPLETED'), po(2, 'CANCELLED'), po(3, 'PENDING'), po(4, 'PARTIAL')]
-    mocks.data['/discrepancies'] = [
-      { id: 1, status: 'COMPLETED' },
-      { id: 2, status: 'ISSUE_RAISED' },
-      { id: 3, status: 'REJECTED' },
-    ] as unknown as Discrepancy[]
+  it('shows open counts for requirements, POs and discrepancies', () => {
+    mocks.data = summary({
+      requirements: 5,
+      openRequirements: 3,
+      purchaseOrders: 4,
+      inProgressPos: 2,
+      discrepancies: 3,
+      openDiscrepancies: 1,
+    })
     renderPage()
 
     const openReqs = screen.getByRole('link', { name: /open requirements/i })
@@ -127,11 +106,35 @@ describe('Dashboard', () => {
   })
 
   it('lists recent purchase orders', () => {
-    mocks.data['/purchase-orders'] = [po(2, 'COMPLETED'), po(1, 'PENDING')]
+    mocks.data = summary({
+      recentPos: [
+        {
+          id: 2,
+          poNumber: 'PO-1002',
+          expectedDate: '2026-09-01T00:00:00Z',
+          status: 'COMPLETED',
+          Vendor: { vendorName: 'Acme Supplies' },
+          Requirement: { requirementNo: 'REQ-2' },
+        },
+        {
+          id: 1,
+          poNumber: 'PO-1001',
+          expectedDate: '2026-09-01T00:00:00Z',
+          status: 'PENDING',
+          Vendor: { vendorName: 'Beta Ltd' },
+          Requirement: { requirementNo: 'REQ-1' },
+        },
+      ],
+    })
     renderPage()
     expect(screen.getByText(/recent purchase orders/i)).toBeInTheDocument()
     expect(screen.getByText('PO-1001')).toBeInTheDocument()
     expect(screen.getByText('PO-1002')).toBeInTheDocument()
+  })
+
+  it('shows a placeholder when there are no purchase orders', () => {
+    renderPage()
+    expect(screen.getByText(/no purchase orders yet/i)).toBeInTheDocument()
   })
 
   it('shows the spinner while loading', () => {

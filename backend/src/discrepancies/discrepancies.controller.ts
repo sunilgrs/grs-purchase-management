@@ -18,8 +18,10 @@ import {
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { AuthUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
+import { Feature } from '../auth/decorators/feature.decorator.js';
 
 @Controller('discrepancies')
+@Feature('discrepancies')
 export class DiscrepanciesController {
   constructor(private readonly discrepanciesService: DiscrepanciesService) {}
 

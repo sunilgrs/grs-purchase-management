@@ -6,13 +6,24 @@ import Layout from './Layout'
 
 const mocks = vi.hoisted(() => ({
   logout: vi.fn(),
-  user: null as { id: number; name: string; mobile: string; email: string | null; role: string; status: string } | null,
+  hasFeature: vi.fn<(feature: string) => boolean>(() => true),
+  user: null as {
+    id: number
+    name: string
+    mobile: string
+    email: string | null
+    role: string
+    status: string
+    permissions: string[] | null
+  } | null,
 }))
 
 vi.mock('../auth/useAuth', () => ({
   useAuth: () => ({
     user: mocks.user,
     logout: mocks.logout,
+    hasFeature: mocks.hasFeature,
+    isAdmin: mocks.user?.role === 'ADMIN',
   }),
 }))
 
@@ -26,7 +37,16 @@ const renderPage = () =>
 describe('Layout', () => {
   beforeEach(() => {
     mocks.logout.mockReset()
-    mocks.user = { id: 1, name: 'Test User', mobile: '9999999999', email: null, role: 'ADMIN', status: 'ACTIVE' }
+    mocks.hasFeature.mockImplementation(() => true)
+    mocks.user = {
+      id: 1,
+      name: 'Test User',
+      mobile: '9999999999',
+      email: null,
+      role: 'ADMIN',
+      status: 'ACTIVE',
+      permissions: null,
+    }
   })
 
   afterEach(() => {
@@ -48,8 +68,27 @@ describe('Layout', () => {
       'Deliveries',
       'Discrepancies',
       'Audit Logs',
+      'Settings',
     ]) {
       expect(screen.getByRole('link', { name: label })).toBeInTheDocument()
+    }
+  })
+
+  it('hides the Settings tab for non-admins', () => {
+    mocks.user = { ...mocks.user!, role: 'MANAGER' }
+    renderPage()
+    expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument()
+  })
+
+  it('hides tabs that are not granted to the user', () => {
+    mocks.hasFeature.mockImplementation((feature: string) =>
+      ['dashboard', 'requirements'].includes(feature),
+    )
+    renderPage()
+    expect(screen.getByRole('link', { name: 'Dashboard' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Requirements' })).toBeInTheDocument()
+    for (const label of ['Vendors', 'Items', 'Users', 'Purchase Orders', 'Deliveries', 'Discrepancies', 'Audit Logs']) {
+      expect(screen.queryByRole('link', { name: label })).not.toBeInTheDocument()
     }
   })
 

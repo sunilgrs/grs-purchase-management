@@ -11,8 +11,10 @@
 import { VendorsService } from './vendors.service.js';
 import { CreateVendorDto } from './dto/create-vendor.dto.js';
 import { UpdateVendorDto } from './dto/update-vendor.dto.js';
+import { Feature } from '../auth/decorators/feature.decorator.js';
 
 @Controller('vendors')
+@Feature('vendors')
 export class VendorsController {
   constructor(private readonly vendorsService: VendorsService) {}
 

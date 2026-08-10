@@ -11,8 +11,10 @@
 import { StoresService } from './stores.service.js';
 import { CreateStoreDto } from './dto/create-store.dto.js';
 import { UpdateStoreDto } from './dto/update-store.dto.js';
+import { Feature } from '../auth/decorators/feature.decorator.js';
 
 @Controller('stores')
+@Feature('requirements')
 export class StoresController {
   constructor(private readonly storesService: StoresService) {}
 

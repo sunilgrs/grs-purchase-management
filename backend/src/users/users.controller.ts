@@ -12,8 +12,11 @@ import { UsersService } from './users.service.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
+import { Feature } from '../auth/decorators/feature.decorator.js';
+import { UpdatePermissionsDto } from './dto/update-permissions.dto.js';
 
 @Controller('users')
+@Feature('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -44,5 +47,14 @@ export class UsersController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.remove(id);
+  }
+
+  @Roles('ADMIN')
+  @Patch(':id/permissions')
+  updatePermissions(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updatePermissionsDto: UpdatePermissionsDto,
+  ) {
+    return this.usersService.updatePermissions(id, updatePermissionsDto);
   }
 }

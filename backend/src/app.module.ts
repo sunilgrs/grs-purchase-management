@@ -14,8 +14,10 @@ import { DeliveriesModule } from './deliveries/deliveries.module.js';
 import { DiscrepanciesModule } from './discrepancies/discrepancies.module.js';
 import { AuditLogsModule } from './audit-logs/audit-logs.module.js';
 import { HealthModule } from './health/health.module.js';
+import { DashboardModule } from './dashboard/dashboard.module.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
+import { FeatureGuard } from './auth/guards/feature.guard.js';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
@@ -38,11 +40,13 @@ import { ThrottlerGuard } from '@nestjs/throttler';
     DiscrepanciesModule,
     AuditLogsModule,
     HealthModule,
+    DashboardModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: FeatureGuard },
   ],
 })
 export class AppModule {}

@@ -11,8 +11,10 @@
 import { CategoriesService } from './categories.service.js';
 import { CreateCategoryDto } from './dto/create-category.dto.js';
 import { UpdateCategoryDto } from './dto/update-category.dto.js';
+import { Feature } from '../auth/decorators/feature.decorator.js';
 
 @Controller('categories')
+@Feature('items')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 

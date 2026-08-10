@@ -30,6 +30,7 @@ const authUser = {
   email: null,
   role: 'MANAGER',
   status: 'ACTIVE',
+  permissions: null,
   accessToken: 'tok-1',
 }
 
@@ -100,5 +101,45 @@ describe('AuthContext', () => {
 
   it('throws when used outside the provider', () => {
     expect(() => renderHook(() => useAuth())).toThrow('useAuth must be used within AuthProvider')
+  })
+
+  describe('hasFeature', () => {
+    it('allows every feature when permissions are unset', () => {
+      localStorage.setItem(
+        'grs_user',
+        JSON.stringify({ id: 1, name: 'A', role: 'MANAGER', permissions: null }),
+      )
+      const { result } = renderHook(() => useAuth(), { wrapper })
+      expect(result.current.hasFeature('vendors')).toBe(true)
+      expect(result.current.hasFeature('requirements')).toBe(true)
+    })
+
+    it('respects an explicit permission list', () => {
+      localStorage.setItem(
+        'grs_user',
+        JSON.stringify({ id: 1, name: 'A', role: 'MANAGER', permissions: ['requirements', 'items'] }),
+      )
+      const { result } = renderHook(() => useAuth(), { wrapper })
+      expect(result.current.hasFeature('requirements')).toBe(true)
+      expect(result.current.hasFeature('items')).toBe(true)
+      expect(result.current.hasFeature('vendors')).toBe(false)
+    })
+
+    it('flags the user as admin by role', () => {
+      localStorage.setItem(
+        'grs_user',
+        JSON.stringify({ id: 1, name: 'A', role: 'ADMIN', permissions: ['dashboard'] }),
+      )
+      const { result } = renderHook(() => useAuth(), { wrapper })
+      expect(result.current.isAdmin).toBe(true)
+      expect(result.current.hasFeature('users')).toBe(true)
+      expect(result.current.hasFeature('vendors')).toBe(false)
+    })
+
+    it('returns false when logged out', () => {
+      const { result } = renderHook(() => useAuth(), { wrapper })
+      expect(result.current.hasFeature('dashboard')).toBe(false)
+      expect(result.current.isAdmin).toBe(false)
+    })
   })
 })

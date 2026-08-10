@@ -14,8 +14,10 @@ import { UpdatePurchaseOrderDto } from './dto/update-purchase-order.dto.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { AuthUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
+import { Feature } from '../auth/decorators/feature.decorator.js';
 
 @Controller('purchase-orders')
+@Feature('purchase-orders')
 export class PurchaseOrdersController {
   constructor(private readonly purchaseOrdersService: PurchaseOrdersService) {}
 

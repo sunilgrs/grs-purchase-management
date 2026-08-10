@@ -9,6 +9,7 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PUBLIC_REGISTER_ROLES, RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
+import { deserializePermissions } from '../common/permissions.js';
 
 @Injectable()
 export class AuthService {
@@ -63,7 +64,13 @@ export class AuthService {
 
     const sanitized = { ...user };
     delete (sanitized as { password?: string }).password;
-    return { ...sanitized, accessToken: this.sign(user) };
+    return {
+      ...sanitized,
+      permissions: deserializePermissions(
+        (user as { permissions?: string | null }).permissions ?? null,
+      ),
+      accessToken: this.sign(user),
+    };
   }
 
   private sign(user: {

@@ -1,7 +1,9 @@
 ﻿import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { AuditLogsService } from './audit-logs.service.js';
+import { Feature } from '../auth/decorators/feature.decorator.js';
 
 @Controller('audit-logs')
+@Feature('audit-logs')
 export class AuditLogsController {
   constructor(private readonly auditLogsService: AuditLogsService) {}
 

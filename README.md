@@ -131,6 +131,24 @@ so the record can be brought back later by editing it and re-enabling it.
 Each of those tabs has a **Show: All / Active / Inactive** filter on the right of the
 page header to browse every record, including deactivated ones.
 
+## Feature access permissions
+
+Admins can control which tabs each user can open from the **Settings** tab
+(Administration section in the sidebar).
+
+- When no permissions are set (`permissions = null`) a user gets the role defaults,
+  i.e. every tab (existing behaviour).
+- When permissions are set, the user can only see and use the granted tabs. Both the
+  sidebar and the API enforce this: a `FeatureGuard` checks the request against the
+  user's stored permissions on every call, so changes apply immediately without a
+  re-login (the sidebar updates on the user's next login).
+- Tabs: Dashboard, Vendors, Items, Users, Requirements, Purchase Orders, Deliveries,
+  Discrepancies, Audit Logs.
+- Admin is a super user: they can always manage the Users tab / Settings even if
+  their own permission list omits it, so they can never lock themselves out.
+- Endpoints: `GET /api/users`, `PATCH /api/users/:id/permissions`
+  (`{ "permissions": ["requirements", "items"] | null }`, admin only).
+
 ## Demo accounts
 
 | Role        | Email                 | Password   |
@@ -143,14 +161,14 @@ page header to browse every record, including deactivated ones.
 ## Testing
 
 ```bash
-# Backend — unit (31) + e2e (53) tests
+# Backend — unit (40) + e2e (65) tests
 cd backend
 npm run test
 npm run test:e2e
 npm run lint
 npm run build
 
-# Frontend — unit/component tests (184 tests) with coverage
+# Frontend — unit/component tests (201 tests) with coverage
 cd frontend
 npm run test
 npm run test:coverage

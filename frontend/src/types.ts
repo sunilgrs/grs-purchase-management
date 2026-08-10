@@ -5,6 +5,7 @@ export interface AuthUser {
   email: string | null
   role: string
   status: string
+  permissions: string[] | null
 }
 
 export interface Store {
@@ -43,6 +44,7 @@ export interface User {
   email: string | null
   role: string
   status: string
+  permissions: string[] | null
   createdAt: string
   updatedAt: string
 }

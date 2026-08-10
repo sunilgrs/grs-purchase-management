@@ -9,6 +9,8 @@ export interface AuthContextValue {
   login: (username: string, password: string) => Promise<void>
   register: (payload: Record<string, unknown>) => Promise<void>
   logout: () => void
+  hasFeature: (feature: string) => boolean
+  isAdmin: boolean
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -60,9 +62,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
+  const hasFeature = useCallback(
+    (feature: string) => {
+      if (!user) return false
+      if (user.role === 'ADMIN' && (feature === 'users' || feature === 'settings'))
+        return true
+      if (user.permissions === null || user.permissions === undefined)
+        return true
+      return user.permissions.includes(feature)
+    },
+    [user],
+  )
+
+  const isAdmin = user?.role === 'ADMIN'
+
   const value = useMemo(
-    () => ({ user, token, loading, login, register, logout }),
-    [user, token, loading, login, register, logout],
+    () => ({ user, token, loading, login, register, logout, hasFeature, isAdmin }),
+    [user, token, loading, login, register, logout, hasFeature, isAdmin],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
