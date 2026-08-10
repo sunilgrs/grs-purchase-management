@@ -18,6 +18,7 @@ import { useAuth } from '../auth/useAuth'
 import { api } from '../lib/api'
 import { formatDate } from '../lib/format'
 import { badgeColor } from '../lib/status'
+import { PrintButton, PrintSheet } from '../components/print'
 import type { Item, Requirement, Store, User, Vendor } from '../types'
 
 const priorities = ['NORMAL', 'HIGH', 'URGENT']
@@ -324,6 +325,14 @@ export default function RequirementsPage() {
         userName={userName}
         onClose={() => setViewing(null)}
       />
+
+      {viewing && (
+        <RequirementPrintSheet
+          requirement={viewing}
+          storeName={storeName}
+          userName={userName}
+        />
+      )}
     </div>
   )
 }
@@ -714,7 +723,7 @@ export function RequirementDetail({
   onClose: () => void
 }) {
   return (
-    <Modal open={Boolean(requirement)} onClose={onClose} title={`Requirement ${requirement?.requirementNo ?? ''}`}>
+    <Modal open={Boolean(requirement)} onClose={onClose} title={`Requirement ${requirement?.requirementNo ?? ''}`} footer={<PrintButton />}>
       {requirement && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3 text-sm">
@@ -753,5 +762,39 @@ export function RequirementDetail({
         </div>
       )}
     </Modal>
+  )
+}
+
+function RequirementPrintSheet({
+  requirement,
+  storeName,
+  userName,
+}: {
+  requirement: Requirement
+  storeName: (id: number) => string
+  userName: (id: number) => string
+}) {
+  return (
+    <PrintSheet
+      title="Material Requirement"
+      number={requirement.requirementNo}
+      meta={[
+        { label: 'Store', value: storeName(requirement.storeId) },
+        { label: 'Requested By', value: userName(requirement.requestedById) },
+        { label: 'Required Date', value: formatDate(requirement.requiredDate) },
+        { label: 'Priority', value: requirement.priority },
+        { label: 'Status', value: label(requirement.status) },
+        { label: 'Raised On', value: formatDate(requirement.createdAt) },
+      ]}
+      columns={['Item', 'Unit', 'Qty']}
+      rows={(requirement.items ?? []).map((it) => [
+        <span key="n">
+          {it.Item?.itemName ?? 'Item'}
+          <span className="ml-2 font-mono text-xs text-slate-400">{it.Item?.itemCode}</span>
+        </span>,
+        it.Item?.unit ?? '—',
+        it.quantity,
+      ])}
+    />
   )
 }

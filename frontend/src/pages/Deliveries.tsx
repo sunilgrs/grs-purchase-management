@@ -12,6 +12,7 @@ import {
 import { useFetch } from '../hooks/useFetch'
 import { formatDate, formatDateTime } from '../lib/format'
 import { badgeColor } from '../lib/status'
+import { PrintButton, PrintSheet } from '../components/print'
 import type { Delivery } from '../types'
 
 export default function DeliveriesPage() {
@@ -63,7 +64,7 @@ export default function DeliveriesPage() {
         )}
       </Card>
 
-      <Modal open={Boolean(viewing)} onClose={() => setViewing(null)} title={`Delivery — ${viewing?.PurchaseOrder?.poNumber ?? ''}`} wide>
+      <Modal open={Boolean(viewing)} onClose={() => setViewing(null)} title={`Delivery — ${viewing?.PurchaseOrder?.poNumber ?? ''}`} wide footer={<PrintButton />}>
         {viewing && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
@@ -107,6 +108,33 @@ export default function DeliveriesPage() {
           </div>
         )}
       </Modal>
+
+      {viewing && <DeliveryPrintSheet delivery={viewing} />}
     </div>
+  )
+}
+
+function DeliveryPrintSheet({ delivery }: { delivery: Delivery }) {
+  return (
+    <PrintSheet
+      title="Delivery Challan"
+      number={delivery.PurchaseOrder?.poNumber}
+      meta={[
+        { label: 'Delivery Date', value: formatDate(delivery.deliveryDate) },
+        { label: 'Received By', value: delivery.User?.name ?? '—' },
+        { label: 'Status', value: delivery.status.replace('_', ' ') },
+        { label: 'Recorded', value: formatDateTime(delivery.createdAt) },
+      ]}
+      columns={['Item', 'Unit', 'Received', 'Condition']}
+      rows={(delivery.items ?? []).map((it) => [
+        <span key="n">
+          {it.Item?.itemName ?? 'Item'}
+          <span className="ml-2 font-mono text-xs text-slate-400">{it.Item?.itemCode}</span>
+        </span>,
+        it.Item?.unit ?? '—',
+        it.receivedQty,
+        it.condition.replace('_', ' '),
+      ])}
+    />
   )
 }

@@ -19,6 +19,7 @@ import { api } from '../lib/api'
 import { formatDate, formatNumber } from '../lib/format'
 import { newLine } from '../lib/lines'
 import { badgeColor } from '../lib/status'
+import { PrintButton, PrintSheet } from '../components/print'
 import type { Item, PurchaseOrder, Requirement, User, Vendor } from '../types'
 
 export default function PurchaseOrdersPage() {
@@ -269,6 +270,8 @@ export default function PurchaseOrdersPage() {
 
       <PODetail po={viewing} onClose={() => setViewing(null)} />
 
+      {viewing && <POPrintSheet po={viewing} />}
+
       <Modal open={Boolean(delivering)} onClose={() => setDelivering(null)} title={`Record Delivery — ${delivering?.poNumber ?? ''}`} wide>
         <form onSubmit={submitDeliver} className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
@@ -314,7 +317,7 @@ export default function PurchaseOrdersPage() {
 function PODetail({ po, onClose }: { po: PurchaseOrder | null; onClose: () => void }) {
   const total = po?.items?.reduce((s, i) => s + i.orderedQty * (i.unitPrice ?? 0), 0) ?? 0
   return (
-    <Modal open={Boolean(po)} onClose={onClose} title={`Purchase Order ${po?.poNumber ?? ''}`} wide>
+    <Modal open={Boolean(po)} onClose={onClose} title={`Purchase Order ${po?.poNumber ?? ''}`} wide footer={<PrintButton />}>
       {po && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
@@ -364,5 +367,41 @@ function PODetail({ po, onClose }: { po: PurchaseOrder | null; onClose: () => vo
         </div>
       )}
     </Modal>
+  )
+}
+
+function POPrintSheet({ po }: { po: PurchaseOrder }) {
+  const total = po.items?.reduce((s, i) => s + i.orderedQty * (i.unitPrice ?? 0), 0) ?? 0
+  return (
+    <PrintSheet
+      title="Purchase Order"
+      number={po.poNumber}
+      subtitle="Please supply the items listed below against the above order."
+      meta={[
+        { label: 'Vendor', value: po.Vendor?.vendorName ?? '—' },
+        { label: 'Requirement', value: po.Requirement?.requirementNo ?? '—' },
+        { label: 'Order Date', value: formatDate(po.orderDate) },
+        { label: 'Expected Date', value: formatDate(po.expectedDate) },
+        { label: 'Status', value: po.status.replace('_', ' ') },
+      ]}
+      columns={['Item', 'Unit', 'Ordered', 'Received', 'Unit Price', 'Amount']}
+      rows={(po.items ?? []).map((it) => [
+        <span key="n">
+          {it.Item?.itemName ?? 'Item'}
+          <span className="ml-2 font-mono text-xs text-slate-400">{it.Item?.itemCode}</span>
+        </span>,
+        it.Item?.unit ?? '—',
+        it.orderedQty,
+        it.receivedQty,
+        it.unitPrice != null ? `₹${formatNumber(it.unitPrice, 0)}` : '—',
+        `₹${formatNumber(it.orderedQty * (it.unitPrice ?? 0), 0)}`,
+      ])}
+      footer={
+        <div className="flex justify-end border-t border-slate-300 pt-2 font-semibold">
+          <span className="w-40 text-right">Total</span>
+          <span className="w-32 text-right">₹{formatNumber(total, 0)}</span>
+        </div>
+      }
+    />
   )
 }

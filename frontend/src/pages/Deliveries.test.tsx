@@ -89,9 +89,10 @@ describe('DeliveriesPage', () => {
     mocks.dels = [makeDelivery({})]
     renderPage()
     await user.click(screen.getByRole('button', { name: /view/i }))
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText('Cement')).toBeInTheDocument()
-    expect(screen.getByText('GOOD')).toBeInTheDocument()
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toBeInTheDocument()
+    expect(within(dialog).getByText('Cement')).toBeInTheDocument()
+    expect(within(dialog).getByText('GOOD')).toBeInTheDocument()
   })
 
   it('shows dashes for a delivery without related records', () => {
