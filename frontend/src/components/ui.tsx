@@ -282,6 +282,9 @@ export function ConfirmDialog({
   onCancel,
   onConfirm,
   busy,
+  confirmLabel = 'Delete',
+  busyLabel = 'Deleting…',
+  variant = 'danger',
 }: {
   open: boolean
   title: string
@@ -290,6 +293,9 @@ export function ConfirmDialog({
   onCancel: () => void
   onConfirm: () => void
   busy?: boolean
+  confirmLabel?: string
+  busyLabel?: string
+  variant?: keyof typeof btnVariants
 }) {
   return (
     <Modal open={open} onClose={onCancel} title={title}>
@@ -301,8 +307,8 @@ export function ConfirmDialog({
         <Button variant="secondary" onClick={onCancel} disabled={busy}>
           Cancel
         </Button>
-        <Button variant="danger" onClick={onConfirm} disabled={busy}>
-          {busy ? 'Deleting…' : 'Delete'}
+        <Button variant={variant} onClick={onConfirm} disabled={busy}>
+          {busy ? busyLabel : confirmLabel}
         </Button>
       </div>
     </Modal>

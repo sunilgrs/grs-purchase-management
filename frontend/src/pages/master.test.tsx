@@ -71,7 +71,7 @@ describe('VendorsPage', () => {
     await renderAsync(<VendorsPage />)
     expect(screen.getByText('Acme Supplies')).toBeInTheDocument()
     expect(screen.getByText('Ravi')).toBeInTheDocument()
-    expect(screen.getByText('Active')).toBeInTheDocument()
+    expect(screen.getAllByText('Active').length).toBeGreaterThanOrEqual(2)
   })
 
   it('creates a vendor from the form', async () => {
@@ -87,13 +87,13 @@ describe('VendorsPage', () => {
     )
   })
 
-  it('deletes a vendor after confirmation', async () => {
+  it('deactivates a vendor after confirmation', async () => {
     apiMock.delete.mockResolvedValue({})
     const user = userEvent.setup()
     await renderAsync(<VendorsPage />)
-    await user.click(screen.getByRole('button', { name: /delete/i }))
-    expect(screen.getByText(/delete this vendor/i)).toBeInTheDocument()
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^delete$/i }))
+    await user.click(screen.getByRole('button', { name: /^deactivate$/i }))
+    expect(screen.getByText(/deactivate this vendor/i)).toBeInTheDocument()
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^deactivate$/i }))
     await waitFor(() => expect(apiMock.delete).toHaveBeenCalledWith('/vendors/1'))
   })
 
@@ -115,7 +115,7 @@ describe('VendorsPage', () => {
     await renderAsync(<VendorsPage />)
     expect(screen.getByText('Solo Vendor')).toBeInTheDocument()
     expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(3)
-    expect(screen.getByText('Inactive')).toBeInTheDocument()
+    expect(screen.getAllByText('Inactive').length).toBeGreaterThanOrEqual(2)
   })
 })
 
@@ -211,13 +211,13 @@ describe('ItemsPage', () => {
     )
   })
 
-  it('deletes an item after confirmation using the custom message', async () => {
+  it('deactivates an item after confirmation using the custom message', async () => {
     apiMock.delete.mockResolvedValue({})
     const user = userEvent.setup()
     await renderAsync(<ItemsPage />)
-    await user.click(screen.getByRole('button', { name: /^delete$/i }))
-    expect(screen.getByText('Delete item "Cement"?')).toBeInTheDocument()
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^delete$/i }))
+    await user.click(screen.getByRole('button', { name: /^deactivate$/i }))
+    expect(screen.getByText('Deactivate item "Cement"?')).toBeInTheDocument()
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^deactivate$/i }))
     await waitFor(() => expect(apiMock.delete).toHaveBeenCalledWith('/items/1'))
   })
 
@@ -262,7 +262,7 @@ describe('ItemsPage', () => {
     await renderAsync(<ItemsPage />)
     expect(screen.getByText('Nails')).toBeInTheDocument()
     expect(screen.getByText('—')).toBeInTheDocument()
-    expect(screen.getByText('Inactive')).toBeInTheDocument()
+    expect(screen.getAllByText('Inactive').length).toBeGreaterThanOrEqual(2)
   })
 })
 
@@ -296,14 +296,14 @@ describe('UsersPage', () => {
     mocks.role = 'ADMIN'
     await renderAsync(<UsersPage />)
     expect(screen.getByText('Manage staff accounts')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /deactivate/i })).toBeInTheDocument()
   })
 
   it('is read-only for non-admins', async () => {
     mocks.role = 'STORE_KEEPER'
     await renderAsync(<UsersPage />)
     expect(screen.getByText('Read-only list')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /deactivate/i })).not.toBeInTheDocument()
   })
 
   it('renders user rows', async () => {
@@ -359,14 +359,14 @@ describe('UsersPage', () => {
     )
   })
 
-  it('deletes a user after confirmation using the custom message', async () => {
+  it('deactivates a user after confirmation using the custom message', async () => {
     apiMock.delete.mockResolvedValue({})
     const user = userEvent.setup()
     mocks.role = 'ADMIN'
     await renderAsync(<UsersPage />)
-    await user.click(screen.getByRole('button', { name: /^delete$/i }))
-    expect(screen.getByText('Delete user "Ramesh"?')).toBeInTheDocument()
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^delete$/i }))
+    await user.click(screen.getByRole('button', { name: /^deactivate$/i }))
+    expect(screen.getByText('Deactivate user "Ramesh"?')).toBeInTheDocument()
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^deactivate$/i }))
     await waitFor(() => expect(apiMock.delete).toHaveBeenCalledWith('/users/1'))
   })
 })

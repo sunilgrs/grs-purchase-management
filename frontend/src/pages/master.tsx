@@ -11,6 +11,7 @@ function VendorsPage() {
     title: 'Vendors',
     endpoint: '/vendors',
     canDelete: true,
+    isActive: (r) => Boolean(r.active),
     columns: [
       { header: 'Vendor', render: (r) => <span className="font-medium text-slate-900">{r.vendorName}</span> },
       { header: 'Contact', render: (r) => r.contactPerson || '—' },
@@ -53,6 +54,7 @@ function ItemsPage() {
     endpoint: '/items',
     canDelete: true,
     headerActions: ({ reload }) => <ItemImportButton onDone={reload} />,
+    isActive: (r) => Boolean(r.active),
     columns: [
       {
         header: 'Item Code',
@@ -93,7 +95,7 @@ function ItemsPage() {
       preferredVendorId: v.preferredVendorId ? Number(v.preferredVendorId) : undefined,
       active: Boolean(v.active),
     }),
-    deleteMessage: (r) => `Delete item "${r.itemName}"?`,
+    deleteMessage: (r) => `Deactivate item "${r.itemName}"?`,
   }
   return <CrudPage config={config} />
 }
@@ -105,6 +107,7 @@ function UsersPage() {
     endpoint: '/users',
     subtitle: user?.role === 'ADMIN' ? 'Manage staff accounts' : 'Read-only list',
     canDelete: user?.role === 'ADMIN',
+    isActive: (r) => r.status === 'ACTIVE',
     columns: [
       { header: 'Name', render: (r) => <span className="font-medium text-slate-900">{r.name}</span> },
       { header: 'Mobile', render: (r) => r.mobile },
@@ -160,7 +163,7 @@ function UsersPage() {
       role: v.role,
       status: v.status,
     }),
-    deleteMessage: (r) => `Delete user "${r.name}"?`,
+    deleteMessage: (r) => `Deactivate user "${r.name}"?`,
   }
   return <CrudPage config={config} />
 }

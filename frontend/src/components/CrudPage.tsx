@@ -55,11 +55,14 @@ export interface CrudConfig<T> {
   fields: CrudField[]
   canDelete?: boolean
   deleteMessage?: (row: T) => string
+  isActive?: (row: T) => boolean
   extraActions?: (row: T) => ReactNode
   headerActions?: (helpers: { reload: () => void }) => ReactNode
   createPayload: (values: Record<string, unknown>) => Record<string, unknown>
   updatePayload?: (values: Record<string, unknown>) => Record<string, unknown>
 }
+
+type FilterValue = 'all' | 'active' | 'inactive'
 
 type FormValues = Record<string, unknown>
 
@@ -75,7 +78,21 @@ export function CrudPage<T extends { id: number }>({
   const [editing, setEditing] = useState<T | null>(null)
   const [deleting, setDeleting] = useState<T | null>(null)
   const [optionMap, setOptionMap] = useState<Record<string, CrudOption[]>>({})
+  const [filter, setFilter] = useState<FilterValue>('all')
   const action = useApiAction()
+
+  const isActive =
+    config.isActive ??
+    ((row) => {
+      const r = row as unknown as Record<string, unknown>
+      if (typeof r.active === 'boolean') return r.active
+      return r.status === 'ACTIVE'
+    })
+
+  const visibleData = data?.filter((row) => {
+    if (filter === 'all') return true
+    return filter === 'active' ? isActive(row) : !isActive(row)
+  })
 
   useEffect(() => {
     if (refreshKey > 0) reload()
@@ -184,16 +201,37 @@ export function CrudPage<T extends { id: number }>({
 
       {error && <div className="mb-4"><ErrorBox message={error} onRetry={reload} /></div>}
 
+      <div className="mb-4 flex items-center gap-2">
+        <span className="text-sm font-medium text-slate-500">Show:</span>
+        {(['all', 'active', 'inactive'] as const).map((f) => (
+          <Button
+            key={f}
+            size="sm"
+            variant={filter === f ? 'primary' : 'secondary'}
+            onClick={() => setFilter(f)}
+          >
+            {f[0].toUpperCase() + f.slice(1)}
+          </Button>
+        ))}
+      </div>
+
       <Card>
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Spinner className="h-8 w-8 text-blue-600" />
           </div>
-        ) : !data || data.length === 0 ? (
-          <EmptyState title={`No ${config.title.toLowerCase()} yet`} hint="Click New to add one." />
+        ) : !visibleData || visibleData.length === 0 ? (
+          <EmptyState
+            title={
+              filter === 'all'
+                ? `No ${config.title.toLowerCase()} yet`
+                : `No ${filter} ${config.title.toLowerCase()}`
+            }
+            hint={filter === 'all' ? 'Click New to add one.' : 'Use the filter to see all records.'}
+          />
         ) : (
           <Table headers={[...config.columns.map((c) => c.header), <span key="actions"></span>]}>
-            {data.map((row) => (
+            {visibleData.map((row) => (
               <tr key={row.id} className="hover:bg-slate-50">
                 {config.columns.map((col, i) => (
                   <td key={i} className="px-4 py-3">
@@ -216,7 +254,7 @@ export function CrudPage<T extends { id: number }>({
                           setDeleting(row)
                         }}
                       >
-                        Delete
+                        Deactivate
                       </Button>
                     )}
                   </div>
@@ -312,8 +350,8 @@ export function CrudPage<T extends { id: number }>({
 
       <ConfirmDialog
         open={Boolean(deleting)}
-        title="Confirm delete"
-        message={deleting ? (config.deleteMessage?.(deleting) ?? `Delete this ${config.title.replace(/s$/, '').toLowerCase()}? This cannot be undone.`) : `Delete this ${config.title.replace(/s$/, '').toLowerCase()}? This cannot be undone.`}
+        title="Confirm deactivation"
+        message={deleting ? (config.deleteMessage?.(deleting) ?? `Deactivate this ${config.title.replace(/s$/, '').toLowerCase()}? You can activate it again later.`) : `Deactivate this ${config.title.replace(/s$/, '').toLowerCase()}? You can activate it again later.`}
         error={action.error}
         onCancel={() => {
           action.clearError()
@@ -321,6 +359,8 @@ export function CrudPage<T extends { id: number }>({
         }}
         onConfirm={confirmDelete}
         busy={action.submitting}
+        confirmLabel="Deactivate"
+        busyLabel="Deactivating…"
       />
     </div>
   )

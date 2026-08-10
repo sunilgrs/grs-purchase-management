@@ -122,6 +122,15 @@ Expected columns (first row = headers, order-independent):
 > Tip: export the existing Items table from the UI to get a starting file, then edit
 > and re-upload it.
 
+## Deactivating records (soft delete)
+
+Vendors, Items and Users are never hard-deleted. The **Deactivate** button on those
+tabs sets `active = false` (or `status = INACTIVE` for users) instead of deleting,
+so the record can be brought back later by editing it and re-enabling it.
+
+Each of those tabs has a **Show: All / Active / Inactive** filter on the right of the
+page header to browse every record, including deactivated ones.
+
 ## Demo accounts
 
 | Role        | Email                 | Password   |
@@ -141,7 +150,7 @@ npm run test:e2e
 npm run lint
 npm run build
 
-# Frontend — unit/component tests (179 tests) with coverage
+# Frontend — unit/component tests (184 tests) with coverage
 cd frontend
 npm run test
 npm run test:coverage

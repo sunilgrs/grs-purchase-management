@@ -39,7 +39,7 @@ const config: CrudConfig<{ id: number; name: string; categoryId: number; address
   title: 'Vendors',
   endpoint: '/vendors',
   canDelete: true,
-  deleteMessage: (r) => `Delete vendor ${r.name}?`,
+  deleteMessage: (r) => `Deactivate vendor ${r.name}?`,
   columns: [
     { header: 'Name', render: (r) => <span>{r.name}</span> },
     { header: 'Address', render: (r) => r.address || '—' },
@@ -123,7 +123,7 @@ describe('CrudPage', () => {
     expect(screen.getByText('Pune')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /star 1/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^edit$/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^deactivate$/i })).toBeInTheDocument()
   })
 
   it('creates a record from the form', async () => {
@@ -159,23 +159,23 @@ describe('CrudPage', () => {
     expect(mocks.apiPatch).toHaveBeenCalledWith('/vendors/1', expect.objectContaining({ name: 'Acme 2', active: true }))
   })
 
-  it('deletes a record after confirmation using the custom message', async () => {
+  it('deactivates a record after confirmation using the custom message', async () => {
     const user = userEvent.setup()
     mocks.apiDelete.mockResolvedValue({})
     await renderAsync(<CrudPage config={config} />)
-    await user.click(screen.getByRole('button', { name: /^delete$/i }))
-    expect(screen.getByText('Delete vendor Acme?')).toBeInTheDocument()
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^delete$/i }))
+    await user.click(screen.getByRole('button', { name: /^deactivate$/i }))
+    expect(screen.getByText('Deactivate vendor Acme?')).toBeInTheDocument()
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^deactivate$/i }))
     await waitFor(() => expect(mocks.apiDelete).toHaveBeenCalledWith('/vendors/1'))
   })
 
-  it('falls back to the default delete message without deleteMessage', async () => {
+  it('falls back to the default deactivate message without deleteMessage', async () => {
     const user = userEvent.setup()
     mocks.apiDelete.mockResolvedValue({})
     const noMessage = { ...config, deleteMessage: undefined }
     await renderAsync(<CrudPage config={noMessage} />)
-    await user.click(screen.getByRole('button', { name: /^delete$/i }))
-    expect(screen.getByText(/delete this vendor/i)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /^deactivate$/i }))
+    expect(screen.getByText(/deactivate this vendor/i)).toBeInTheDocument()
   })
 
   it('cancels the form without submitting', async () => {
@@ -209,10 +209,10 @@ describe('CrudPage', () => {
     expect(mocks.apiPost).toHaveBeenCalledWith('/vendors', expect.objectContaining({ active: false }))
   })
 
-  it('cancels a delete from the confirm dialog', async () => {
+  it('cancels a deactivation from the confirm dialog', async () => {
     const user = userEvent.setup()
     await renderAsync(<CrudPage config={config} />)
-    await user.click(screen.getByRole('button', { name: /^delete$/i }))
+    await user.click(screen.getByRole('button', { name: /^deactivate$/i }))
     await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^cancel$/i }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(mocks.apiDelete).not.toHaveBeenCalled()
@@ -237,5 +237,66 @@ describe('CrudPage', () => {
   it('reloads on mount when refreshKey is set', async () => {
     await renderAsync(<CrudPage config={config} refreshKey={1} />)
     expect(mocks.reload).toHaveBeenCalled()
+  })
+
+  it('shows all rows by default', async () => {
+    mocks.data = [
+      { id: 1, name: 'Active Co', categoryId: 1, address: '', active: true },
+      { id: 2, name: 'Inactive Co', categoryId: 1, address: '', active: false },
+    ]
+    await renderAsync(<CrudPage config={config} />)
+    expect(screen.getByText('Active Co')).toBeInTheDocument()
+    expect(screen.getByText('Inactive Co')).toBeInTheDocument()
+  })
+
+  it('filters to active rows only', async () => {
+    mocks.data = [
+      { id: 1, name: 'Active Co', categoryId: 1, address: '', active: true },
+      { id: 2, name: 'Inactive Co', categoryId: 1, address: '', active: false },
+    ]
+    const user = userEvent.setup()
+    await renderAsync(<CrudPage config={config} />)
+    await user.click(screen.getByRole('button', { name: /^active$/i }))
+    expect(screen.getByText('Active Co')).toBeInTheDocument()
+    expect(screen.queryByText('Inactive Co')).not.toBeInTheDocument()
+  })
+
+  it('filters to inactive rows only', async () => {
+    mocks.data = [
+      { id: 1, name: 'Active Co', categoryId: 1, address: '', active: true },
+      { id: 2, name: 'Inactive Co', categoryId: 1, address: '', active: false },
+    ]
+    const user = userEvent.setup()
+    await renderAsync(<CrudPage config={config} />)
+    await user.click(screen.getByRole('button', { name: /^inactive$/i }))
+    expect(screen.getByText('Inactive Co')).toBeInTheDocument()
+    expect(screen.queryByText('Active Co')).not.toBeInTheDocument()
+  })
+
+  it('uses the isActive callback for status-based records', async () => {
+    const userConfig = {
+      ...config,
+      isActive: (r: { id: number; name: string; categoryId: number; address: string; active: boolean }) =>
+        (r as unknown as { status: string }).status === 'ACTIVE',
+    }
+    mocks.data = [
+      { id: 1, name: 'On Staff', categoryId: 1, address: '', status: 'ACTIVE' },
+      { id: 2, name: 'Off Staff', categoryId: 1, address: '', status: 'INACTIVE' },
+    ] as unknown as typeof mocks.data
+    const user = userEvent.setup()
+    await renderAsync(<CrudPage config={userConfig} />)
+    expect(screen.getByText('On Staff')).toBeInTheDocument()
+    expect(screen.getByText('Off Staff')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /^inactive$/i }))
+    expect(screen.getByText('Off Staff')).toBeInTheDocument()
+    expect(screen.queryByText('On Staff')).not.toBeInTheDocument()
+  })
+
+  it('shows a filtered empty state when no rows match', async () => {
+    mocks.data = [{ id: 1, name: 'Active Co', categoryId: 1, address: '', active: false }]
+    const user = userEvent.setup()
+    await renderAsync(<CrudPage config={config} />)
+    await user.click(screen.getByRole('button', { name: /^active$/i }))
+    expect(screen.getByText(/no active vendors/i)).toBeInTheDocument()
   })
 })

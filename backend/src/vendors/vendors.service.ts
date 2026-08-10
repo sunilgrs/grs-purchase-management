@@ -4,7 +4,6 @@
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { throwIfForeignKeyViolation } from '../common/prisma-errors.js';
 import { CreateVendorDto } from './dto/create-vendor.dto.js';
 import { UpdateVendorDto } from './dto/update-vendor.dto.js';
 
@@ -55,14 +54,9 @@ export class VendorsService {
 
   async remove(id: number) {
     await this.findOne(id);
-    try {
-      await this.prisma.vendor.delete({ where: { id } });
-    } catch (err) {
-      throwIfForeignKeyViolation(
-        err,
-        'This vendor is referenced by items or purchase orders and cannot be deleted. Set it to inactive instead.',
-      );
-    }
-    return { deleted: true, id };
+    return this.prisma.vendor.update({
+      where: { id },
+      data: { active: false },
+    });
   }
 }

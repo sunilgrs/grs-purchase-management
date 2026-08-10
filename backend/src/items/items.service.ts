@@ -5,7 +5,6 @@
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { throwIfForeignKeyViolation } from '../common/prisma-errors.js';
 import { CreateItemDto } from './dto/create-item.dto.js';
 import { UpdateItemDto } from './dto/update-item.dto.js';
 import { parseItemExcel } from './item-import.js';
@@ -72,15 +71,7 @@ export class ItemsService {
 
   async remove(id: number) {
     await this.findOne(id);
-    try {
-      await this.prisma.item.delete({ where: { id } });
-    } catch (err) {
-      throwIfForeignKeyViolation(
-        err,
-        'This item is referenced by requirements, purchase orders or deliveries and cannot be deleted.',
-      );
-    }
-    return { deleted: true, id };
+    return this.prisma.item.update({ where: { id }, data: { active: false } });
   }
 
   async importFromExcel(buffer: Buffer): Promise<ImportResult> {
