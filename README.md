@@ -62,12 +62,13 @@ Open http://localhost:5173 and log in with a demo account.
 
 ## Docker deployment
 
-A full deployment runs the backend (API on `:3000`), the frontend (served by Nginx), and a
-persistent SQLite volume — one command:
+A full deployment runs the backend, the frontend (served by Nginx), and **Caddy** as an HTTPS
+reverse proxy, with a persistent SQLite volume — one command:
 
 ```bash
-# 1. Set a strong secret (optional; defaults are dev-only)
+# 1. Set a strong secret (optional; defaults are dev-only) and your site address
 echo "JWT_SECRET=$(openssl rand -hex 32)" > .env
+echo "SITE_ADDRESS=localhost" >> .env    # or your domain / LAN IP
 
 # 2. Build and start
 docker compose up -d --build
@@ -76,10 +77,38 @@ docker compose up -d --build
 docker compose exec backend npx prisma db seed
 ```
 
-Then open http://localhost:8080 (frontend) or http://localhost:3000/api/health (API health check).
+Then open:
+
+- **https://localhost** — the frontend (HTTPS)
+- **https://localhost/api/health** — API health check
+
+### TLS
+
+Caddy terminates TLS automatically, so there is no certificate to generate by hand:
+
+- `SITE_ADDRESS=localhost` or a private IP (e.g. `192.168.1.50`) → Caddy issues a self-signed
+  certificate from its internal CA. No DNS needed, works straight away.
+- `SITE_ADDRESS=purchase.example.com` → Caddy obtains a real **Let's Encrypt** certificate and
+  renews it automatically. Ports 80/443 must reach this machine, and `CORS_ORIGINS` should use
+  the `https://` origin.
+
+HTTP on port 80 is automatically redirected to HTTPS.
+
+To trust the internal CA so browsers/curl stop warning about the self-signed certificate, import
+Caddy's root certificate once:
+
+```bash
+docker compose exec caddy cat /data/caddy/pki/authorities/local/root.crt > caddy-root.crt
+
+# Windows (admin PowerShell)
+certutil -addstore -f Root .\caddy-root.crt
+# or double-click caddy-root.crt -> Install Certificate -> Local Machine -> Trusted Root Certification Authorities
+```
 
 Notes:
 
+- The backend (`:3000`) and frontend (`:8080`) containers are no longer published on the host;
+  all traffic goes through Caddy on port 443 (HTTPS) with port 80 redirecting to it.
 - The database is a SQLite file inside the `grs-data` volume (mounted at `/app/data/grs.db` in the
   backend container). Migrations run automatically on container start.
 - `docker compose down` keeps the data volume; `docker compose down -v` wipes it.
@@ -92,10 +121,10 @@ Notes:
 - **Rate limiting** — the API is rate-limited (100 req/min globally, 10 req/min on `/api/auth/*`).
   Disabled when `NODE_ENV=test` so test suites are unaffected.
 - **CORS** — the backend only allows origins in `CORS_ORIGINS` (default: localhost dev ports).
-  The Nginx container proxies `/api`, so browsers talking to `:8080` are same-origin regardless.
-- **HTTPS** — terminate TLS at a reverse proxy in front of the `frontend` container (e.g. Nginx +
-  Let's Encrypt / Certbot, or your cloud load balancer), then set `CORS_ORIGINS` to the public
-  `https://` origin.
+  The Nginx container proxies `/api`, so browsers talking to the frontend are same-origin regardless.
+- **HTTPS** — TLS is terminated by the bundled Caddy proxy (see [Docker deployment](#docker-deployment)).
+  Self-signed by default for localhost/private IPs; a public `SITE_ADDRESS` gets an automatic
+  Let's Encrypt certificate. Set `CORS_ORIGINS` to the public `https://` origin when using one.
 
 ## Bulk item import (Excel)
 

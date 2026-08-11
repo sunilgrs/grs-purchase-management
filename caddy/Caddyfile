@@ -1,0 +1,8 @@
+{$SITE_ADDRESS} {
+	# HTTPS is automatic: Caddy uses its internal CA (self-signed) for
+	# localhost / private IPs, or Let's Encrypt for public domains.
+	encode gzip
+
+	# The Nginx container serves the SPA and proxies /api to the backend.
+	reverse_proxy frontend:80
+}
