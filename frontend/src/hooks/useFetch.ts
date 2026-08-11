@@ -8,7 +8,7 @@ export interface FetchState<T> {
   reload: () => void
 }
 
-export function useFetch<T>(path: string | null): FetchState<T> {
+export function useFetch<T>(path: string | null, pollIntervalMs?: number): FetchState<T> {
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -34,6 +34,12 @@ export function useFetch<T>(path: string | null): FetchState<T> {
       cancelled = true
     }
   }, [path, tick])
+
+  useEffect(() => {
+    if (!path || !pollIntervalMs) return
+    const id = setInterval(() => setTick((t) => t + 1), pollIntervalMs)
+    return () => clearInterval(id)
+  }, [path, pollIntervalMs])
 
   const reload = useCallback(() => setTick((t) => t + 1), [])
 

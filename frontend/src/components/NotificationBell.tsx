@@ -121,7 +121,7 @@ export default function NotificationBell({
   placement?: 'down' | 'up'
 }) {
   const navigate = useNavigate()
-  const { data, loading, reload } = useFetch<NotificationsPayload>('/notifications')
+  const { data, loading, reload } = useFetch<NotificationsPayload>('/notifications', 30000)
   const [open, setOpen] = useState(false)
   const [readAt, setReadAt] = useState<string>(() => readTimestamp())
 

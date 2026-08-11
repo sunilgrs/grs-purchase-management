@@ -52,6 +52,17 @@ describe('useFetch', () => {
     expect(apiMock.get).not.toHaveBeenCalled()
   })
 
+  it('re-fetches on an interval when pollIntervalMs is set', async () => {
+    apiMock.get.mockResolvedValue([1])
+    const { result, unmount } = renderHook(() => useFetch<number[]>('/numbers', 50))
+    await waitFor(() => expect(result.current.data).toEqual([1]))
+    await waitFor(() => expect(apiMock.get.mock.calls.length).toBeGreaterThanOrEqual(2))
+    const calls = apiMock.get.mock.calls.length
+    unmount()
+    await new Promise((r) => setTimeout(r, 150))
+    expect(apiMock.get.mock.calls.length).toBe(calls)
+  })
+
   it('ignores results after unmount', async () => {
     let resolve!: (v: number[]) => void
     apiMock.get.mockImplementation(() => new Promise((r) => (resolve = r)))
