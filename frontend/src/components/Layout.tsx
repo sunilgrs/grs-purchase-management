@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
+import NotificationBell from './NotificationBell'
 
 const navSections = [
   {
@@ -83,6 +84,9 @@ export default function Layout() {
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-[11px] font-bold text-emerald-800 ring-1 ring-emerald-200">
             GRS
           </div>
+        </div>
+        <div className="ml-auto">
+          <NotificationBell />
         </div>
       </header>
 
@@ -176,6 +180,9 @@ export default function Layout() {
             <div className="min-w-0 flex-1 leading-tight">
               <p className="truncate text-sm font-medium text-emerald-950">{user?.name}</p>
               <p className="truncate text-xs text-emerald-900/50">{user?.role}</p>
+            </div>
+            <div className="hidden lg:block">
+              <NotificationBell placement="up" />
             </div>
             <button
               onClick={handleLogout}

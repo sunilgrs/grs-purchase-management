@@ -27,6 +27,10 @@ vi.mock('../auth/useAuth', () => ({
   }),
 }))
 
+vi.mock('../hooks/useFetch', () => ({
+  useFetch: () => ({ data: null, loading: false, error: null, reload: () => {} }),
+}))
+
 const renderPage = () =>
   render(
     <MemoryRouter initialEntries={['/']}>
