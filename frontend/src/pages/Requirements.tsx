@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useFocusParam } from '../hooks/useFocus'
 import { ItemLineEditor } from '../components/ItemLineEditor'
 import type { LineDraft } from '../components/ItemLineEditor'
 import {
@@ -70,6 +71,15 @@ export default function RequirementsPage() {
     remarks: '',
   })
   const [lines, setLines] = useState<LineDraft[]>([])
+  const { focusId, clearFocus } = useFocusParam()
+
+  useEffect(() => {
+    if (focusId == null || !data || data.length === 0) return
+    const match = data.find((r) => r.id === focusId)
+    if (!match) return
+    setViewing(match)
+    clearFocus()
+  }, [focusId, data, clearFocus])
 
   const openCreate = () => {
     setForm({ storeId: '', requestedById: '', requiredDate: '', priority: 'NORMAL', remarks: '' })

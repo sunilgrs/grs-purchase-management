@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useFocusParam } from '../hooks/useFocus'
 import {
   Badge,
   Button,
@@ -56,6 +57,25 @@ export default function DiscrepanciesPage() {
     quantity: '',
     description: '',
   })
+  const { focusId, clearFocus } = useFocusParam()
+  const [highlightId, setHighlightId] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (focusId == null || !data || data.length === 0) return
+    if (!data.some((d) => d.id === focusId)) return
+    setHighlightId(focusId)
+    clearFocus()
+  }, [focusId, data, clearFocus])
+
+  useEffect(() => {
+    if (highlightId == null) return
+    const el = document.getElementById(`disc-row-${highlightId}`)
+    if (typeof el?.scrollIntoView === 'function') {
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    }
+    const timer = setTimeout(() => setHighlightId(null), 2500)
+    return () => clearTimeout(timer)
+  }, [highlightId])
 
   const poDeliveries = deliveries?.filter((d) => d.poId === Number(form.poId)) ?? []
   const selectedDelivery = deliveries?.find((d) => d.id === Number(form.deliveryId))
@@ -117,7 +137,11 @@ export default function DiscrepanciesPage() {
         ) : (
           <Table headers={['PO', 'Delivery', 'Item', 'Type', 'Qty', 'Status', 'Reported', '']}>
             {data.map((d) => (
-              <tr key={d.id} className="hover:bg-emerald-50/70">
+              <tr
+                key={d.id}
+                id={`disc-row-${d.id}`}
+                className={d.id === highlightId ? 'bg-amber-50' : 'hover:bg-emerald-50/70'}
+              >
                 <td className="px-4 py-3 font-mono text-xs font-medium text-emerald-950">
                   {d.PurchaseOrder?.poNumber ?? '—'}
                 </td>

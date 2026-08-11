@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, within, act, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import RequirementsPage from './Requirements'
 import type { Requirement, Item, Store, User, Vendor } from '../types'
 
@@ -107,7 +108,12 @@ const reqItem = () => ({
   Item: { id: 1, itemCode: 'ITM-1', itemName: 'Cement', unit: 'bag' },
 })
 
-const renderPage = () => render(<RequirementsPage />)
+const renderPage = (path = '/requirements') =>
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <RequirementsPage />
+    </MemoryRouter>,
+  )
 
 describe('RequirementsPage', () => {
   beforeEach(() => {
@@ -413,5 +419,15 @@ describe('RequirementsPage', () => {
     expect(within(dialog).getByText('Need urgently')).toBeInTheDocument()
     expect(within(dialog).getByText('Cement')).toBeInTheDocument()
     expect(within(dialog).getByText('ITM-1')).toBeInTheDocument()
+  })
+
+  it('opens the requirement detail directly from a focus param', () => {
+    mocks.role = 'STORE_KEEPER'
+    mocks.stores = [store]
+    mocks.users = [user]
+    mocks.reqs = [makeReq({ status: 'COMPLETED', requirementNo: 'REQ-FOCUS' })]
+    renderPage('/requirements?focus=1')
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText(/REQ-FOCUS/)).toBeInTheDocument()
   })
 })

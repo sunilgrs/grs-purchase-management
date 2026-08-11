@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import DiscrepanciesPage from './Discrepancies'
 import type { Discrepancy, Delivery, PurchaseOrder } from '../types'
 
@@ -95,7 +96,12 @@ const makeDis = (over: Partial<Discrepancy>): Discrepancy => ({
   ...over,
 })
 
-const renderPage = () => render(<DiscrepanciesPage />)
+const renderPage = (path = '/discrepancies') =>
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <DiscrepanciesPage />
+    </MemoryRouter>,
+  )
 
 describe('DiscrepanciesPage', () => {
   beforeEach(() => {
@@ -363,5 +369,14 @@ describe('DiscrepanciesPage', () => {
     renderPage()
     await userEv.click(screen.getByRole('button', { name: /^complete$/i }))
     expect(mocks.apiPost).toHaveBeenCalledWith('/discrepancies/1/complete', {})
+  })
+
+  it('highlights the row targeted by a focus param', () => {
+    mocks.role = 'STORE_KEEPER'
+    mocks.dis = [makeDis({ id: 7, discrepancyType: 'DAMAGE' })]
+    renderPage('/discrepancies?focus=7')
+    const row = screen.getByText('DAMAGE').closest('tr')
+    expect(row).not.toBeNull()
+    expect(row!.className).toContain('bg-amber-50')
   })
 })

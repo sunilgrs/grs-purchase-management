@@ -53,14 +53,21 @@ describe('useFetch', () => {
   })
 
   it('re-fetches on an interval when pollIntervalMs is set', async () => {
+    vi.useFakeTimers()
     apiMock.get.mockResolvedValue([1])
-    const { result, unmount } = renderHook(() => useFetch<number[]>('/numbers', 50))
-    await waitFor(() => expect(result.current.data).toEqual([1]))
-    await waitFor(() => expect(apiMock.get.mock.calls.length).toBeGreaterThanOrEqual(2))
-    const calls = apiMock.get.mock.calls.length
+    const { result, unmount } = renderHook(() => useFetch<number[]>('/numbers', 30_000))
+    expect(apiMock.get).toHaveBeenCalledTimes(1)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000)
+    })
+    expect(apiMock.get).toHaveBeenCalledTimes(2)
+    expect(result.current.data).toEqual([1])
     unmount()
-    await new Promise((r) => setTimeout(r, 150))
-    expect(apiMock.get.mock.calls.length).toBe(calls)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000)
+    })
+    expect(apiMock.get).toHaveBeenCalledTimes(2)
+    vi.useRealTimers()
   })
 
   it('ignores results after unmount', async () => {

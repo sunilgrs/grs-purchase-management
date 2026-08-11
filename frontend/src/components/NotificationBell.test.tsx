@@ -104,7 +104,7 @@ describe('NotificationBell', () => {
     renderBell()
     await user.click(screen.getByRole('button', { name: /notifications/i }))
     await user.click(screen.getByText('REQ-1'))
-    expect(mocks.navigate).toHaveBeenCalledWith('/requirements')
+    expect(mocks.navigate).toHaveBeenCalledWith('/requirements?focus=1')
     expect(mocks.post).toHaveBeenCalledWith('/notifications/read', {})
     await waitFor(() => expect(screen.queryByText('3')).not.toBeInTheDocument())
   })

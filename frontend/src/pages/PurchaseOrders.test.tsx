@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, within, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import PurchaseOrdersPage from './PurchaseOrders'
 import type { Item, PurchaseOrder, Requirement, User, Vendor } from '../types'
 
@@ -137,7 +138,12 @@ const makePo = (over: Partial<PurchaseOrder>): PurchaseOrder => ({
   ...over,
 })
 
-const renderPage = () => render(<PurchaseOrdersPage />)
+const renderPage = (path = '/purchase-orders') =>
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <PurchaseOrdersPage />
+    </MemoryRouter>,
+  )
 
 describe('PurchaseOrdersPage', () => {
   beforeEach(() => {
@@ -289,5 +295,14 @@ describe('PurchaseOrdersPage', () => {
     expect(within(dialog).getByText('ITM-1')).toBeInTheDocument()
     expect(within(dialog).getByText('Total')).toBeInTheDocument()
     expect(within(dialog).getAllByText('₹1,000')).toHaveLength(2)
+  })
+
+  it('opens the PO detail directly from a focus param', () => {
+    mocks.role = 'MANAGER'
+    mocks.pos = [makePo({ poNumber: 'PO-FOCUS' })]
+    renderPage('/purchase-orders?focus=1')
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText(/PO-FOCUS/)).toBeInTheDocument()
+    expect(within(dialog).getByText('Acme Supplies')).toBeInTheDocument()
   })
 })
