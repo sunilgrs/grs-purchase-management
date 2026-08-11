@@ -3,6 +3,10 @@ import { NotificationsService } from './notifications.service.js';
 
 function makeService() {
   const prisma = {
+    notificationRead: {
+      findUnique: jest.fn(() => null),
+      upsert: jest.fn(),
+    },
     requirement: {
       findMany: jest.fn(() => [
         {
@@ -46,7 +50,11 @@ function makeService() {
 describe('NotificationsService', () => {
   it('returns pending approvals for approver roles', async () => {
     const { service, prisma } = makeService();
-    const res = await service.findAll('MANAGER');
+    const res = await service.findAll(1, 'MANAGER');
+    expect(prisma.notificationRead.findUnique).toHaveBeenCalledWith({
+      where: { userId: 1 },
+      select: { lastReadAt: true },
+    });
     expect(prisma.requirement.findMany).toHaveBeenCalledTimes(1);
     expect(prisma.requirement.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -56,18 +64,28 @@ describe('NotificationsService', () => {
     expect(res.approvals).toEqual([
       expect.objectContaining({ requirementNo: 'REQ-3' }),
     ]);
+    expect(res.lastReadAt).toBeNull();
+  });
+
+  it('reports the saved lastReadAt for the user', async () => {
+    const { service, prisma } = makeService();
+    prisma.notificationRead.findUnique.mockReturnValue({
+      lastReadAt: new Date('2026-08-11T08:00:00Z'),
+    });
+    const res = await service.findAll(1, 'STORE_KEEPER');
+    expect(res.lastReadAt).toBe('2026-08-11T08:00:00.000Z');
   });
 
   it('skips approvals for store keepers', async () => {
     const { service, prisma } = makeService();
-    const res = await service.findAll('STORE_KEEPER');
+    const res = await service.findAll(1, 'STORE_KEEPER');
     expect(prisma.requirement.findMany).not.toHaveBeenCalled();
     expect(res.approvals).toEqual([]);
   });
 
   it('returns in-progress purchase orders and open discrepancies for everyone', async () => {
     const { service, prisma } = makeService();
-    const res = await service.findAll('STORE_KEEPER');
+    const res = await service.findAll(1, 'STORE_KEEPER');
     expect(prisma.purchaseOrder.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } },
@@ -84,5 +102,16 @@ describe('NotificationsService', () => {
     expect(res.discrepancies).toEqual([
       expect.objectContaining({ discrepancyType: 'DAMAGE' }),
     ]);
+  });
+
+  it('marks all notifications read for the user', async () => {
+    const { service, prisma } = makeService();
+    const res = await service.markAllRead(7);
+    expect(prisma.notificationRead.upsert).toHaveBeenCalledWith({
+      where: { userId: 7 },
+      create: { userId: 7, lastReadAt: expect.any(Date) },
+      update: { lastReadAt: expect.any(Date) },
+    });
+    expect(res.lastReadAt).toEqual(expect.any(String));
   });
 });

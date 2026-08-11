@@ -47,6 +47,7 @@ export async function registerUser(
 }
 
 export async function resetDatabase(prisma: PrismaService): Promise<void> {
+  await prisma.notificationRead.deleteMany();
   await prisma.discrepancy.deleteMany();
   await prisma.deliveryItem.deleteMany();
   await prisma.delivery.deleteMany();

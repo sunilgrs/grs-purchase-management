@@ -7,10 +7,14 @@ const APPROVAL_ROLES = new Set(['MANAGER', 'PURCHASER', 'ADMIN']);
 export class NotificationsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(role: string) {
+  async findAll(userId: number, role: string) {
     const includeApprovals = APPROVAL_ROLES.has(role);
 
-    const [approvals, deliveries, discrepancies] = await Promise.all([
+    const [lastRead, approvals, deliveries, discrepancies] = await Promise.all([
+      this.prisma.notificationRead.findUnique({
+        where: { userId },
+        select: { lastReadAt: true },
+      }),
       includeApprovals
         ? this.prisma.requirement.findMany({
             where: { status: 'PENDING_MANAGER_APPROVAL' },
@@ -53,6 +57,21 @@ export class NotificationsService {
       }),
     ]);
 
-    return { approvals, deliveries, discrepancies };
+    return {
+      lastReadAt: lastRead?.lastReadAt.toISOString() ?? null,
+      approvals,
+      deliveries,
+      discrepancies,
+    };
+  }
+
+  async markAllRead(userId: number) {
+    const lastReadAt = new Date();
+    await this.prisma.notificationRead.upsert({
+      where: { userId },
+      create: { userId, lastReadAt },
+      update: { lastReadAt },
+    });
+    return { lastReadAt: lastReadAt.toISOString() };
   }
 }

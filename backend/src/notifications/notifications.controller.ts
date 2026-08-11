@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { NotificationsService } from './notifications.service.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { AuthUser } from '../auth/decorators/current-user.decorator.js';
@@ -9,6 +9,11 @@ export class NotificationsController {
 
   @Get()
   findAll(@CurrentUser() user: AuthUser) {
-    return this.notificationsService.findAll(user.role);
+    return this.notificationsService.findAll(user.id, user.role);
+  }
+
+  @Post('read')
+  markAllRead(@CurrentUser() user: AuthUser) {
+    return this.notificationsService.markAllRead(user.id);
   }
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import NotificationBell from './NotificationBell'
 import type { NotificationsPayload } from './NotificationBell'
@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   data: null as NotificationsPayload | null,
   loading: false,
   navigate: vi.fn(),
+  post: vi.fn(),
 }))
 
 vi.mock('../hooks/useFetch', () => ({
@@ -19,12 +20,15 @@ vi.mock('../hooks/useFetch', () => ({
   }),
 }))
 
+vi.mock('../lib/api', () => ({ api: { post: mocks.post } }))
+
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>()
   return { ...actual, useNavigate: () => mocks.navigate }
 })
 
 const payload = (overrides: Partial<NotificationsPayload> = {}): NotificationsPayload => ({
+  lastReadAt: null,
   approvals: [
     {
       id: 1,
@@ -61,10 +65,11 @@ const renderBell = (placement: 'down' | 'up' = 'down') => render(<NotificationBe
 
 describe('NotificationBell', () => {
   beforeEach(() => {
-    localStorage.clear()
     mocks.data = null
     mocks.loading = false
     mocks.navigate.mockReset()
+    mocks.post.mockReset()
+    mocks.post.mockResolvedValue({ lastReadAt: '9999-12-31T00:00:00Z' })
   })
 
   afterEach(() => {
@@ -72,7 +77,7 @@ describe('NotificationBell', () => {
   })
 
   it('shows an empty state when there are no notifications', async () => {
-    mocks.data = { approvals: [], deliveries: [], discrepancies: [] }
+    mocks.data = { lastReadAt: null, approvals: [], deliveries: [], discrepancies: [] }
     const user = userEvent.setup()
     renderBell()
     await user.click(screen.getByRole('button', { name: /notifications/i }))
@@ -93,16 +98,15 @@ describe('NotificationBell', () => {
     expect(screen.getByText(/damage · safety gloves/i)).toBeInTheDocument()
   })
 
-  it('navigates and marks notifications read when an item is clicked', async () => {
+  it('navigates and persists read state when an item is clicked', async () => {
     mocks.data = payload()
     const user = userEvent.setup()
     renderBell()
     await user.click(screen.getByRole('button', { name: /notifications/i }))
     await user.click(screen.getByText('REQ-1'))
     expect(mocks.navigate).toHaveBeenCalledWith('/requirements')
-    expect(localStorage.getItem('grs_notif_read')).not.toBeNull()
-    await user.click(screen.getByRole('button', { name: /notifications/i }))
-    expect(screen.queryByText('3')).not.toBeInTheDocument()
+    expect(mocks.post).toHaveBeenCalledWith('/notifications/read', {})
+    await waitFor(() => expect(screen.queryByText('3')).not.toBeInTheDocument())
   })
 
   it('marks all notifications read from the dropdown', async () => {
@@ -111,14 +115,12 @@ describe('NotificationBell', () => {
     renderBell()
     await user.click(screen.getByRole('button', { name: /notifications/i }))
     await user.click(screen.getByRole('button', { name: /mark all read/i }))
-    expect(localStorage.getItem('grs_notif_read')).not.toBeNull()
-    await user.click(screen.getByRole('button', { name: /notifications/i }))
-    expect(screen.queryByText('3')).not.toBeInTheDocument()
+    expect(mocks.post).toHaveBeenCalledWith('/notifications/read', {})
+    await waitFor(() => expect(screen.queryByText('3')).not.toBeInTheDocument())
   })
 
   it('does not show a badge when everything has been read', () => {
-    localStorage.setItem('grs_notif_read', '9999-12-31T00:00:00Z')
-    mocks.data = payload()
+    mocks.data = payload({ lastReadAt: '9999-12-31T00:00:00Z' })
     renderBell()
     expect(screen.queryByText('3')).not.toBeInTheDocument()
   })

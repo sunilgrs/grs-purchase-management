@@ -20,6 +20,7 @@ model User {
   updatedAt                                   DateTime      @updatedAt
   AuditLog               AuditLog[]
   Delivery               Delivery[]
+  NotificationRead       NotificationRead?
   approvedRequirements   Requirement[] @relation("Requirement_approvedByIdToUser")
   requestedRequirements  Requirement[] @relation("Requirement_requestedByIdToUser")
 }
@@ -76,6 +77,13 @@ model Category {
   name      String   @unique
   createdAt DateTime @default(now())
   Item      Item[]
+}
+
+model NotificationRead {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @unique
+  lastReadAt DateTime @default(now())
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Delivery {

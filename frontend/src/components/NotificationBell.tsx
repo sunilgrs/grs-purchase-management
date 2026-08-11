@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Spinner } from './ui'
 import { useFetch } from '../hooks/useFetch'
+import { api } from '../lib/api'
 import { formatDate } from '../lib/format'
 
 export interface NotificationsPayload {
+  lastReadAt: string | null
   approvals: {
     id: number
     requirementNo: string
@@ -47,12 +49,19 @@ interface BellGroup {
   items: BellItem[]
 }
 
-const READ_KEY = 'grs_notif_read'
-
 const toneDot: Record<BellItem['tone'], string> = {
   amber: 'bg-amber-500',
   emerald: 'bg-emerald-500',
   rose: 'bg-rose-500',
+}
+
+function isUnread(item: BellItem, readAt: string): boolean {
+  if (!item.createdAt || !readAt) return true
+  const t = new Date(item.createdAt).getTime()
+  const r = new Date(readAt).getTime()
+  if (Number.isNaN(t)) return true
+  if (Number.isNaN(r)) return true
+  return t > r
 }
 
 function buildGroups(payload: NotificationsPayload): BellGroup[] {
@@ -102,19 +111,6 @@ function buildGroups(payload: NotificationsPayload): BellGroup[] {
   ].filter((g) => g.items.length > 0)
 }
 
-function readTimestamp(): string {
-  return localStorage.getItem(READ_KEY) ?? ''
-}
-
-function isUnread(item: BellItem, readAt: string): boolean {
-  if (!item.createdAt || !readAt) return true
-  const t = new Date(item.createdAt).getTime()
-  const r = new Date(readAt).getTime()
-  if (Number.isNaN(t)) return true
-  if (Number.isNaN(r)) return true
-  return t > r
-}
-
 export default function NotificationBell({
   placement = 'down',
 }: {
@@ -123,7 +119,19 @@ export default function NotificationBell({
   const navigate = useNavigate()
   const { data, loading, reload } = useFetch<NotificationsPayload>('/notifications', 30000)
   const [open, setOpen] = useState(false)
-  const [readAt, setReadAt] = useState<string>(() => readTimestamp())
+  const [readAt, setReadAt] = useState('')
+
+  useEffect(() => {
+    if (!data?.lastReadAt) return
+    setReadAt((prev) => {
+      if (!prev) return data.lastReadAt as string
+      const prevTime = new Date(prev).getTime()
+      const serverTime = new Date(data.lastReadAt as string).getTime()
+      return Number.isNaN(prevTime) || serverTime > prevTime
+        ? (data.lastReadAt as string)
+        : prev
+    })
+  }, [data])
 
   const groups = data ? buildGroups(data) : []
   const allItems = groups.flatMap((g) => g.items)
@@ -135,14 +143,17 @@ export default function NotificationBell({
     if (next) reload()
   }
 
-  const markAllRead = () => {
-    const now = new Date().toISOString()
-    localStorage.setItem(READ_KEY, now)
-    setReadAt(now)
+  const markAllRead = async () => {
+    try {
+      const res = await api.post<{ lastReadAt: string }>('/notifications/read', {})
+      setReadAt(res.lastReadAt)
+    } catch {
+      /* keep current state if the server request fails */
+    }
   }
 
   const openItem = (route: string) => {
-    markAllRead()
+    void markAllRead()
     setOpen(false)
     navigate(route)
   }
