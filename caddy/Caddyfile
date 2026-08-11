@@ -9,3 +9,10 @@
 	# The Nginx container serves the SPA and proxies /api to the backend.
 	reverse_proxy frontend:80
 }
+
+# Plain HTTP entry point for phones on the same Wi-Fi. Phones don't send SNI
+# for bare IPs, which breaks HTTPS-over-IP; HTTP avoids that entirely.
+http://{$LAN_IP:192.168.1.33}:8080 {
+	encode gzip
+	reverse_proxy frontend:80
+}
