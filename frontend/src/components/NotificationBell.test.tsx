@@ -124,4 +124,43 @@ describe('NotificationBell', () => {
     renderBell()
     expect(screen.queryByText('3')).not.toBeInTheDocument()
   })
+
+  it('does not toast on the initial load', () => {
+    mocks.data = payload()
+    renderBell()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+
+  it('shows a toast when new unread items arrive on a later poll', async () => {
+    mocks.data = { lastReadAt: null, approvals: [], deliveries: [], discrepancies: [] }
+    const { rerender } = renderBell()
+    mocks.data = payload()
+    rerender(<NotificationBell />)
+    await waitFor(() => expect(screen.getByRole('status')).toBeInTheDocument())
+    expect(screen.getByText(/new notification/i)).toBeInTheDocument()
+    expect(screen.getByText('REQ-1')).toBeInTheDocument()
+  })
+
+  it('navigates to the record when the toast is clicked', async () => {
+    mocks.data = { lastReadAt: null, approvals: [], deliveries: [], discrepancies: [] }
+    const { rerender } = renderBell()
+    mocks.data = payload()
+    rerender(<NotificationBell />)
+    await waitFor(() => screen.getByRole('status'))
+    const user = userEvent.setup()
+    await user.click(screen.getByText('REQ-1'))
+    expect(mocks.navigate).toHaveBeenCalledWith('/requirements?focus=1')
+  })
+
+  it('dismisses the toast without navigating', async () => {
+    mocks.data = { lastReadAt: null, approvals: [], deliveries: [], discrepancies: [] }
+    const { rerender } = renderBell()
+    mocks.data = payload()
+    rerender(<NotificationBell />)
+    await waitFor(() => screen.getByRole('status'))
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /dismiss notification/i }))
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(mocks.navigate).not.toHaveBeenCalled()
+  })
 })

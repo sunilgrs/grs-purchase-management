@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Spinner } from './ui'
 import { useFetch } from '../hooks/useFetch'
@@ -120,6 +120,10 @@ export default function NotificationBell({
   const { data, loading, reload } = useFetch<NotificationsPayload>('/notifications', 30000)
   const [open, setOpen] = useState(false)
   const [readAt, setReadAt] = useState('')
+  const [toast, setToast] = useState<BellItem | null>(null)
+  const loadedOnce = useRef(false)
+  const prevUnread = useRef(0)
+  const toastTimer = useRef<number | undefined>(undefined)
 
   useEffect(() => {
     if (!data?.lastReadAt) return
@@ -136,6 +140,31 @@ export default function NotificationBell({
   const groups = data ? buildGroups(data) : []
   const allItems = groups.flatMap((g) => g.items)
   const unreadCount = allItems.filter((it) => isUnread(it, readAt)).length
+
+  useEffect(() => {
+    if (!data || placement !== 'down') return
+    if (!loadedOnce.current) {
+      loadedOnce.current = true
+      prevUnread.current = unreadCount
+      return
+    }
+    if (!open && unreadCount > prevUnread.current && allItems.length > 0) {
+      const newest = allItems
+        .filter((it) => isUnread(it, readAt))
+        .sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )[0]
+      if (newest) setToast(newest)
+    }
+    prevUnread.current = unreadCount
+  }, [data, open, readAt, placement, allItems, unreadCount])
+
+  useEffect(() => {
+    if (!toast) return
+    window.clearTimeout(toastTimer.current)
+    toastTimer.current = window.setTimeout(() => setToast(null), 6000)
+    return () => window.clearTimeout(toastTimer.current)
+  }, [toast])
 
   const toggle = () => {
     const next = !open
@@ -252,6 +281,36 @@ export default function NotificationBell({
             </div>
           </div>
         </>
+      )}
+
+      {toast && (
+        <div role="status" className="fixed bottom-4 right-4 z-50 w-80 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+          <button
+            onClick={() => {
+              setToast(null)
+              openItem(toast.route)
+            }}
+            className="flex w-full items-start gap-2.5 px-4 py-3 pr-8 text-left hover:bg-emerald-50/60"
+          >
+            <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${toneDot[toast.tone]}`} />
+            <span className="min-w-0 flex-1">
+              <span className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
+                New notification
+              </span>
+              <span className="block truncate text-sm font-medium text-emerald-950">{toast.title}</span>
+              <span className="block truncate text-xs text-slate-500">{toast.subtitle}</span>
+            </span>
+          </button>
+          <button
+            aria-label="Dismiss notification"
+            onClick={() => setToast(null)}
+            className="absolute right-1.5 top-1.5 rounded p-1 text-slate-400 hover:text-slate-600"
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+            </svg>
+          </button>
+        </div>
       )}
     </div>
   )
