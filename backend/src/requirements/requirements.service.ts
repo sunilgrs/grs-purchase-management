@@ -15,8 +15,11 @@ import {
 } from './dto/actions.dto.js';
 import { sequentialNumber } from '../common/doc-number.js';
 import { assertTransition } from '../common/status.js';
-import { buildWhatsAppLink, formatDateLabel } from '../common/whatsapp.js';
-
+import {
+  buildRequirementMessage,
+  buildWhatsAppLink,
+  WHATSAPP_FORMATS,
+} from '../common/whatsapp.js';
 const REQUIREMENT_INCLUDE = {
   Store: true,
   requestedBy: { select: { id: true, name: true, mobile: true, email: true } },
@@ -424,30 +427,33 @@ export class RequirementsService {
       );
     }
 
-    const lines = po.items.map((it, i) => {
-      const price = it.unitPrice != null ? ` @ ₹${it.unitPrice}` : '';
-      return `${i + 1}. ${it.Item?.itemName ?? `Item #${it.itemId}`} — ${
-        it.orderedQty
-      } ${it.Item?.unit ?? ''}${price}`;
+    const data = {
+      vendor: po.Vendor.vendorName,
+      poNumber: po.poNumber,
+      requirementNo: req.requirementNo,
+      expectedDate: po.expectedDate,
+      items: po.items.map((it) => ({
+        itemName: it.Item?.itemName ?? `Item #${it.itemId}`,
+        orderedQty: it.orderedQty,
+        unit: it.Item?.unit,
+        unitPrice: it.unitPrice,
+      })),
+    };
+
+    const formats = WHATSAPP_FORMATS.map((f) => {
+      const message = buildRequirementMessage(data, f.id);
+      return {
+        id: f.id,
+        label: f.label,
+        message,
+        waLink: buildWhatsAppLink(message, po.Vendor.mobile),
+      };
     });
 
-    const message = [
-      `Dear ${po.Vendor.vendorName},`,
-      '',
-      `We have placed the following order (PO ${po.poNumber}) against requirement ${req.requirementNo}. Please arrange supply:`,
-      '',
-      ...lines,
-      '',
-      `Expected delivery: ${formatDateLabel(po.expectedDate)}`,
-      'Kindly acknowledge and confirm the delivery date.',
-      '',
-      'Thank you.',
-      'GRS IPS Purchase Management',
-    ].join('\n');
-
     return {
-      message,
-      waLink: buildWhatsAppLink(message, po.Vendor.mobile),
+      formats,
+      message: formats[0].message,
+      waLink: formats[0].waLink,
       mobile: po.Vendor.mobile,
       vendor: po.Vendor.vendorName,
       poNumber: po.poNumber,

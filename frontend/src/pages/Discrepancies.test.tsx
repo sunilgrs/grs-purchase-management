@@ -307,6 +307,34 @@ describe('DiscrepanciesPage', () => {
     expect(within(dialog).queryByText('Acme Supplies')).not.toBeInTheDocument()
   })
 
+  it('switches between replacement WhatsApp message formats', async () => {
+    const userEv = userEvent.setup()
+    mocks.role = 'PURCHASER'
+    mocks.dis = [makeDis({ status: 'VENDOR_NOTIFIED' })]
+    mocks.apiGet.mockResolvedValue({
+      message: 'Formal replacement',
+      waLink: 'https://wa.me/9876543210?text=formal',
+      mobile: '9876543210',
+      vendor: 'Acme Supplies',
+      poNumber: 'PO-001',
+      formats: [
+        { id: 'formal', label: 'Formal', message: 'Formal replacement', waLink: 'https://wa.me/9876543210?text=formal' },
+        { id: 'short', label: 'Short & Concise', message: 'Short replacement', waLink: 'https://wa.me/9876543210?text=short' },
+        { id: 'friendly', label: 'Friendly', message: 'Friendly replacement', waLink: 'https://wa.me/9876543210?text=friendly' },
+      ],
+    })
+    renderPage()
+    await userEv.click(screen.getByRole('button', { name: /whatsapp/i }))
+    const dialog = screen.getByRole('dialog')
+    expect(await within(dialog).findByText('Formal replacement')).toBeInTheDocument()
+    await userEv.click(within(dialog).getByRole('radio', { name: /friendly/i }))
+    expect(within(dialog).getByRole('textbox')).toHaveValue('Friendly replacement')
+    expect(within(dialog).getByRole('link', { name: /open whatsapp/i })).toHaveAttribute(
+      'href',
+      'https://wa.me/9876543210?text=friendly',
+    )
+  })
+
   it('shows an error when the replacement message fails to load', async () => {
     const userEv = userEvent.setup()
     mocks.role = 'PURCHASER'

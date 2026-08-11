@@ -23,12 +23,20 @@ const types = ['SHORTAGE', 'EXCESS', 'DAMAGE', 'WRONG_ITEM', 'QUALITY', 'OTHER']
 
 const label = (status: string) => status.replace(/_/g, ' ')
 
+interface WhatsAppFormatVariant {
+  id: string
+  label: string
+  message: string
+  waLink: string | null
+}
+
 interface WhatsAppPayload {
   message: string
   waLink: string | null
   mobile: string | null
   vendor: string
   poNumber: string
+  formats?: WhatsAppFormatVariant[]
 }
 
 export default function DiscrepanciesPage() {
@@ -387,6 +395,7 @@ function DiscrepancyWhatsAppModal({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [selected, setSelected] = useState('formal')
 
   useEffect(() => {
     if (!discrepancy) return
@@ -394,6 +403,7 @@ function DiscrepancyWhatsAppModal({
     setPayload(null)
     setLoading(true)
     setError(null)
+    setSelected('formal')
     api
       .get<WhatsAppPayload>(`/discrepancies/${discrepancy.id}/whatsapp-message`)
       .then((p) => {
@@ -410,9 +420,13 @@ function DiscrepancyWhatsAppModal({
     }
   }, [discrepancy])
 
+  const current = payload?.formats?.find((f) => f.id === selected) ?? null
+  const message = current?.message ?? payload?.message ?? ''
+  const waLink = current?.waLink ?? payload?.waLink ?? null
+
   const copy = async () => {
-    if (!payload) return
-    await navigator.clipboard.writeText(payload.message)
+    if (!message) return
+    await navigator.clipboard.writeText(message)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -431,19 +445,39 @@ function DiscrepancyWhatsAppModal({
                 Send this replacement request to <span className="font-medium text-slate-800">{payload.vendor}</span>
                 {payload.mobile ? ` (${payload.mobile})` : ''}.
               </p>
+              {payload.formats && payload.formats.length > 1 ? (
+                <fieldset>
+                  <legend className="mb-1.5 text-sm font-medium text-slate-700">Message format</legend>
+                  <div className="flex flex-wrap gap-4">
+                    {payload.formats.map((f) => (
+                      <label key={f.id} className="inline-flex items-center gap-1.5 text-sm text-slate-700">
+                        <input
+                          type="radio"
+                          name="wa-message-format"
+                          value={f.id}
+                          checked={selected === f.id}
+                          onChange={() => setSelected(f.id)}
+                          className="h-4 w-4 accent-emerald-600"
+                        />
+                        {f.label}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              ) : null}
               <textarea
                 readOnly
                 rows={9}
-                value={payload.message}
+                value={message}
                 className="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700 outline-none"
               />
               <div className="flex flex-wrap items-center gap-2">
                 <Button variant="secondary" onClick={copy}>
                   {copied ? 'Copied!' : 'Copy Message'}
                 </Button>
-                {payload.waLink && (
+                {waLink && (
                   <a
-                    href={payload.waLink}
+                    href={waLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"

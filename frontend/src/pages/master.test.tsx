@@ -380,7 +380,7 @@ describe('UsersPage', () => {
     await user.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: /^reset password$/i }),
     )
-    await waitFor(() => expect(apiMock.post).toHaveBeenCalledWith('/users/1/reset-password'))
+    await waitFor(() => expect(apiMock.post).toHaveBeenCalledWith('/users/1/reset-password', {}))
     expect(screen.getByText('TEMPxyz9')).toBeInTheDocument()
   })
 

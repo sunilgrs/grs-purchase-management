@@ -84,6 +84,12 @@ describe('Purchase workflow (e2e)', () => {
     expect(wa.body.message).toContain('E2E Vendor A');
     expect(wa.body.waLink).toContain('https://wa.me/9111111111');
     expect(wa.body.poNumber).toBe(po.poNumber);
+    expect(wa.body.formats).toHaveLength(3);
+    expect(wa.body.formats.map((f: { id: string }) => f.id)).toEqual([
+      'formal',
+      'short',
+      'friendly',
+    ]);
 
     await server()
       .post(`/api/requirements/${reqId}/mark-whatsapp-sent`)

@@ -342,6 +342,42 @@ describe('RequirementsPage', () => {
     expect(mocks.apiPost).toHaveBeenCalledWith('/requirements/1/mark-whatsapp-sent', {})
   })
 
+  it('switches between WhatsApp message formats', async () => {
+    const userEv = userEvent.setup()
+    mocks.role = 'PURCHASER'
+    mocks.reqs = [makeReq({ status: 'VENDOR_ASSIGNED' })]
+    mocks.apiGet.mockResolvedValue({
+      message: 'Formal message',
+      waLink: 'https://wa.me/9876543210?text=formal',
+      mobile: '9876543210',
+      vendor: 'Acme Supplies',
+      poNumber: 'PO-0001',
+      expectedDate: '2026-09-05',
+      formats: [
+        { id: 'formal', label: 'Formal', message: 'Formal message', waLink: 'https://wa.me/9876543210?text=formal' },
+        { id: 'short', label: 'Short & Concise', message: 'Short message', waLink: 'https://wa.me/9876543210?text=short' },
+        { id: 'friendly', label: 'Friendly', message: 'Friendly message', waLink: 'https://wa.me/9876543210?text=friendly' },
+      ],
+    })
+    mocks.apiPost.mockResolvedValue({})
+    renderPage()
+    await userEv.click(screen.getByRole('button', { name: /whatsapp/i }))
+    const dialog = screen.getByRole('dialog')
+    expect(await within(dialog).findByText('Formal message')).toBeInTheDocument()
+    expect(within(dialog).getByRole('link', { name: /open whatsapp/i })).toHaveAttribute(
+      'href',
+      'https://wa.me/9876543210?text=formal',
+    )
+    await userEv.click(within(dialog).getByRole('radio', { name: /short/i }))
+    expect(within(dialog).getByRole('textbox')).toHaveValue('Short message')
+    expect(within(dialog).getByRole('link', { name: /open whatsapp/i })).toHaveAttribute(
+      'href',
+      'https://wa.me/9876543210?text=short',
+    )
+    await userEv.click(within(dialog).getByRole('radio', { name: /friendly/i }))
+    expect(within(dialog).getByRole('textbox')).toHaveValue('Friendly message')
+  })
+
   it('copies the WhatsApp message', async () => {
     const userEv = userEvent.setup()
     mocks.role = 'PURCHASER'

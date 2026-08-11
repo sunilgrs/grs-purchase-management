@@ -12,7 +12,11 @@ import {
   VerifyDiscrepancyDto,
 } from './dto/actions.dto.js';
 import { assertTransition } from '../common/status.js';
-import { buildWhatsAppLink } from '../common/whatsapp.js';
+import {
+  buildDiscrepancyMessage,
+  buildWhatsAppLink,
+  WHATSAPP_FORMATS,
+} from '../common/whatsapp.js';
 
 const DISCREPANCY_INCLUDE = {
   Item: { select: { id: true, itemCode: true, itemName: true, unit: true } },
@@ -273,26 +277,29 @@ export class DiscrepanciesService {
       );
     }
 
-    const message = [
-      `Dear ${po.Vendor.vendorName},`,
-      '',
-      `We received delivery against PO ${po.poNumber}, but there is an issue with the following item:`,
-      '',
-      `Item: ${d.Item?.itemName ?? `Item #${d.itemId}`}`,
-      `Issue: ${d.discrepancyType}${d.quantity != null ? ` (qty ${d.quantity})` : ''}`,
-      d.description ? `Details: ${d.description}` : null,
-      '',
-      'Please arrange a replacement at the earliest.',
-      '',
-      'Thank you.',
-      'GRS IPS Purchase Management',
-    ]
-      .filter((line) => line !== null)
-      .join('\n');
+    const data = {
+      vendor: po.Vendor.vendorName,
+      poNumber: po.poNumber,
+      itemName: d.Item?.itemName ?? `Item #${d.itemId}`,
+      discrepancyType: d.discrepancyType,
+      quantity: d.quantity,
+      description: d.description,
+    };
+
+    const formats = WHATSAPP_FORMATS.map((f) => {
+      const message = buildDiscrepancyMessage(data, f.id);
+      return {
+        id: f.id,
+        label: f.label,
+        message,
+        waLink: buildWhatsAppLink(message, po.Vendor.mobile),
+      };
+    });
 
     return {
-      message,
-      waLink: buildWhatsAppLink(message, po.Vendor.mobile),
+      formats,
+      message: formats[0].message,
+      waLink: formats[0].waLink,
       mobile: po.Vendor.mobile,
       vendor: po.Vendor.vendorName,
       poNumber: po.poNumber,
