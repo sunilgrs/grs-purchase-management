@@ -79,9 +79,7 @@ export class RequirementsService {
     return this.prisma.requirement.findMany({
       orderBy: { id: 'desc' },
       include: {
-        Store: true,
-        requestedBy: { select: { id: true, name: true } },
-        approvedBy: { select: { id: true, name: true } },
+        ...REQUIREMENT_INCLUDE,
         _count: { select: { items: true, PurchaseOrder: true } },
       },
     });

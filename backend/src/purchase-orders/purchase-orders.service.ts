@@ -111,10 +111,7 @@ export class PurchaseOrdersService {
     return this.prisma.purchaseOrder.findMany({
       orderBy: { id: 'desc' },
       include: {
-        Vendor: { select: { id: true, vendorName: true } },
-        Requirement: {
-          select: { id: true, requirementNo: true, status: true },
-        },
+        ...PO_INCLUDE,
         _count: { select: { items: true, Delivery: true } },
       },
     });
