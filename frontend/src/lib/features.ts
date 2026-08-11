@@ -34,6 +34,10 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
     label: 'Audit',
     features: [{ key: 'audit-logs', label: 'Audit Logs' }],
   },
+  {
+    label: 'Reporting',
+    features: [{ key: 'reports', label: 'Reports' }],
+  },
 ]
 
 export const ALL_FEATURES = FEATURE_GROUPS.flatMap((g) => g.features)

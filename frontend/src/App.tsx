@@ -16,6 +16,7 @@ import {
 import PurchaseOrdersPage from './pages/PurchaseOrders'
 import RegisterPage from './pages/Register'
 import RequirementsPage from './pages/Requirements'
+import ReportsPage from './pages/Reports'
 import SettingsPage from './pages/Settings'
 
 const featureRoutes = [
@@ -28,6 +29,7 @@ const featureRoutes = [
   { path: '/deliveries', feature: 'deliveries' },
   { path: '/discrepancies', feature: 'discrepancies' },
   { path: '/audit-logs', feature: 'audit-logs' },
+  { path: '/reports', feature: 'reports' },
   { path: '/settings', feature: 'settings' },
 ]
 
@@ -160,6 +162,14 @@ export default function App() {
               element={
                 <FeatureGate feature="audit-logs">
                   <AuditLogsPage />
+                </FeatureGate>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <FeatureGate feature="reports">
+                  <ReportsPage />
                 </FeatureGate>
               }
             />

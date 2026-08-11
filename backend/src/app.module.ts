@@ -16,6 +16,7 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module.js';
 import { HealthModule } from './health/health.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
+import { ReportsModule } from './reports/reports.module.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { FeatureGuard } from './auth/guards/feature.guard.js';
@@ -43,6 +44,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
     HealthModule,
     DashboardModule,
     NotificationsModule,
+    ReportsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

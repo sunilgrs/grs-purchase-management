@@ -31,6 +31,10 @@ const navSections = [
     label: 'Audit',
     links: [{ to: '/audit-logs', label: 'Audit Logs', feature: 'audit-logs', icon: 'M9 12h6 M9 16h6 M9 8h6 M4 3h16v18l-4-3-4 3-4-3-4 3V3z' }],
   },
+  {
+    label: 'Reporting',
+    links: [{ to: '/reports', label: 'Reports', feature: 'reports', icon: 'M4 20h16 M6 20v-9 M12 20V5 M18 20v-6' }],
+  },
 ]
 
 export default function Layout() {
