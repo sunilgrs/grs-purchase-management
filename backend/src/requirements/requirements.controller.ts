@@ -92,7 +92,7 @@ export class RequirementsController {
   }
 
   @Post(':id/mark-whatsapp-sent')
-  @Roles('MANAGER', 'ADMIN')
+  @Roles('MANAGER', 'PURCHASER', 'ADMIN')
   markWhatsAppSent(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,
@@ -101,7 +101,7 @@ export class RequirementsController {
   }
 
   @Post(':id/mark-awaiting-delivery')
-  @Roles('MANAGER', 'ADMIN')
+  @Roles('MANAGER', 'PURCHASER', 'ADMIN')
   markAwaitingDelivery(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,

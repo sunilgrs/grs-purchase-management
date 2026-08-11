@@ -80,7 +80,7 @@ export class DiscrepanciesController {
   }
 
   @Post(':id/await-replacement')
-  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'MANAGER', 'PURCHASER', 'ADMIN')
   awaitReplacement(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,

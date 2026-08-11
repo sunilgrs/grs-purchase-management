@@ -346,6 +346,24 @@ describe('RBAC (e2e)', () => {
         403,
       );
     });
+    it('PURCHASER can mark-whatsapp-sent', async () => {
+      await check(
+        'post',
+        `/api/requirements/${poReqId}/mark-whatsapp-sent`,
+        {},
+        ctx.purchaser.accessToken,
+        201,
+      );
+    });
+    it('PURCHASER can mark-awaiting-delivery', async () => {
+      await check(
+        'post',
+        `/api/requirements/${poReqId}/mark-awaiting-delivery`,
+        {},
+        ctx.purchaser.accessToken,
+        201,
+      );
+    });
   });
 
   describe('Discrepancy actions', () => {
@@ -439,6 +457,39 @@ describe('RBAC (e2e)', () => {
         `/api/discrepancies/${discrepancyId}/await-replacement`,
         {},
         ctx.storeKeeper.accessToken,
+        201,
+      );
+    });
+    it('PURCHASER can await-replacement', async () => {
+      const dis = await api(
+        'post',
+        '/api/discrepancies',
+        {
+          poId,
+          deliveryId,
+          itemId: ctx.itemAId,
+          discrepancyType: 'DAMAGE',
+          quantity: 1,
+        },
+        ctx.storeKeeper.accessToken,
+      ).expect(201);
+      await api(
+        'post',
+        `/api/discrepancies/${dis.body.id}/start-review`,
+        {},
+        ctx.storeKeeper.accessToken,
+      ).expect(201);
+      await api(
+        'post',
+        `/api/discrepancies/${dis.body.id}/manager-review`,
+        { approve: true },
+        ctx.manager.accessToken,
+      ).expect(201);
+      await check(
+        'post',
+        `/api/discrepancies/${dis.body.id}/await-replacement`,
+        {},
+        ctx.purchaser.accessToken,
         201,
       );
     });
