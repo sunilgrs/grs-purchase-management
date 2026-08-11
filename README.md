@@ -68,7 +68,7 @@ reverse proxy, with a persistent SQLite volume — one command:
 ```bash
 # 1. Set a strong secret (optional; defaults are dev-only) and your site address
 echo "JWT_SECRET=$(openssl rand -hex 32)" > .env
-echo "SITE_ADDRESS=localhost" >> .env    # or your domain / LAN IP
+echo "SITE_ADDRESS=localhost" >> .env    # or your domain / LAN IP / custom hostname
 
 # 2. Build and start
 docker compose up -d --build
@@ -91,6 +91,11 @@ Caddy terminates TLS automatically, so there is no certificate to generate by ha
 - `SITE_ADDRESS=purchase.example.com` → Caddy obtains a real **Let's Encrypt** certificate and
   renews it automatically. Ports 80/443 must reach this machine, and `CORS_ORIGINS` should use
   the `https://` origin.
+- A **custom local hostname** (e.g. `SITE_ADDRESS=ips-purchase-manager`) → not `localhost`, so
+  Caddy would try Let's Encrypt and fail. Set `TLS_INTERNAL=internal` in `.env` to force the
+  internal CA, and map the name to loopback so the browser finds it:
+  - Add `127.0.0.1 ips-purchase-manager` to `C:\Windows\System32\drivers\etc\hosts` (admin).
+  - Add `https://ips-purchase-manager` to `CORS_ORIGINS` in `.env`.
 
 HTTP on port 80 is automatically redirected to HTTPS.
 
