@@ -18,6 +18,16 @@ const PALETTE = [
   '#64748b',
 ]
 
+const COLOR_OVERRIDES: Record<string, string> = {
+  partial: '#0ea5e9',
+  shortage: '#0ea5e9',
+  low: '#0ea5e9',
+}
+
+function colorFor(label: string, index: number): string {
+  return COLOR_OVERRIDES[label.toLowerCase()] ?? PALETTE[index % PALETTE.length]
+}
+
 function formatCompact(value: number): string {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`
@@ -120,7 +130,7 @@ export function DonutChart({
                   cy={60}
                   r={radius}
                   fill="none"
-                  stroke={PALETTE[i % PALETTE.length]}
+                  stroke={colorFor(d.label, i)}
                   strokeWidth={stroke}
                   strokeDasharray={`${dash} ${circumference - dash}`}
                   strokeDashoffset={-offset * circumference}
@@ -143,7 +153,7 @@ export function DonutChart({
             {data.map((d, i) => (
               <li key={d.label} className="flex items-center justify-between gap-3 text-sm">
                 <span className="flex min-w-0 items-center gap-2">
-                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: PALETTE[i % PALETTE.length] }} />
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: colorFor(d.label, i) }} />
                   <span className="truncate text-slate-600">{d.label.replace(/_/g, ' ')}</span>
                 </span>
                 <span className="font-medium text-emerald-950">{formatValue(d.value)}</span>

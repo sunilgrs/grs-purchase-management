@@ -48,6 +48,23 @@ describe('chart components', () => {
     expect(screen.getByText('Nothing yet')).toBeInTheDocument()
   })
 
+  it('DonutChart colors partial, shortage and low labels blue', () => {
+    render(
+      <DonutChart
+        title="Status"
+        data={[
+          { label: 'PARTIAL', value: 2 },
+          { label: 'COMPLETED', value: 3 },
+          { label: 'LOW', value: 1 },
+          { label: 'SHORTAGE', value: 1 },
+        ]}
+      />,
+    )
+    const dots = document.querySelectorAll('span[style*="background-color"]')
+    const styles = [...dots].map((d) => (d as HTMLElement).style.backgroundColor)
+    expect(styles).toContain('rgb(14, 165, 233)')
+  })
+
   it('RankList shows labels and values', () => {
     render(
       <RankList
