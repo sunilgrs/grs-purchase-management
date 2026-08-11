@@ -11,12 +11,17 @@ import { UpdateUserDto } from './dto/update-user.dto.js';
 import { UpdatePermissionsDto } from './dto/update-permissions.dto.js';
 import { FEATURES } from '../auth/decorators/feature.decorator.js';
 import { deserializePermissions } from '../common/permissions.js';
+import { generateTemporaryPassword } from '../common/temp-password.js';
+import { AuditLogsService } from '../audit-logs/audit-logs.service.js';
 
 const USER_OMIT = { password: true } as const;
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLogsService: AuditLogsService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const existing = await this.prisma.user.findFirst({
@@ -129,6 +134,30 @@ export class UsersService {
       omit: USER_OMIT,
     });
     return this.withPermissions(user);
+  }
+
+  async resetPassword(id: number, performedById: number) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException(`User #${id} not found`);
+    const temporaryPassword = generateTemporaryPassword();
+    const password = await bcrypt.hash(temporaryPassword, 10);
+    await this.prisma.user.update({
+      where: { id },
+      data: { password },
+    });
+    await this.auditLogsService.log({
+      entityType: 'USER',
+      entityId: id,
+      action: 'PASSWORD_RESET',
+      description: 'Temporary password set by an administrator',
+      performedById,
+    });
+    return {
+      id: user.id,
+      name: user.name,
+      mobile: user.mobile,
+      temporaryPassword,
+    };
   }
 
   private withPermissions(

@@ -369,5 +369,41 @@ describe('UsersPage', () => {
     await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^deactivate$/i }))
     await waitFor(() => expect(apiMock.delete).toHaveBeenCalledWith('/users/1'))
   })
+
+  it('resets a user password and shows the temporary password', async () => {
+    apiMock.post.mockResolvedValue({ temporaryPassword: 'TEMPxyz9' })
+    const user = userEvent.setup()
+    mocks.role = 'ADMIN'
+    await renderAsync(<UsersPage />)
+    await user.click(screen.getByRole('button', { name: /^reset$/i }))
+    expect(screen.getByText(/generate a temporary password for "Ramesh"/i)).toBeInTheDocument()
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: /^reset password$/i }),
+    )
+    await waitFor(() => expect(apiMock.post).toHaveBeenCalledWith('/users/1/reset-password'))
+    expect(screen.getByText('TEMPxyz9')).toBeInTheDocument()
+  })
+
+  it('copies the temporary password to the clipboard', async () => {
+    apiMock.post.mockResolvedValue({ temporaryPassword: 'TEMPxyz9' })
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined)
+    const user = userEvent.setup()
+    mocks.role = 'ADMIN'
+    await renderAsync(<UsersPage />)
+    await user.click(screen.getByRole('button', { name: /^reset$/i }))
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: /^reset password$/i }),
+    )
+    await user.click(screen.getByRole('button', { name: /^copy$/i }))
+    expect(writeText).toHaveBeenCalledWith('TEMPxyz9')
+    await waitFor(() => expect(screen.getByRole('button', { name: /copied!/i })).toBeInTheDocument())
+    writeText.mockRestore()
+  })
+
+  it('hides the reset action for non-admins', async () => {
+    mocks.role = 'STORE_KEEPER'
+    await renderAsync(<UsersPage />)
+    expect(screen.queryByRole('button', { name: /^reset$/i })).not.toBeInTheDocument()
+  })
 })
 

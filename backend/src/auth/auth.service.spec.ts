@@ -43,17 +43,26 @@ function makeService(prismaUser?: UserRecord | null) {
   const prisma = {
     user: {
       findFirst: jest.fn(() => prismaUser),
+      findUnique: jest.fn(() => prismaUser),
       create: jest.fn((args: CreateArgs) => {
         createArgs = args;
         return { ...realUser, email: args.data.email };
       }),
+      update: jest.fn(),
     },
   };
   const jwt = {
     sign: jest.fn().mockReturnValue('signed-token'),
   };
-  const service = new AuthService(prisma as never, jwt as never);
-  return { service, prisma, jwt, createArgs: () => createArgs };
+  const auditLogs = {
+    log: jest.fn(),
+  };
+  const service = new AuthService(
+    prisma as never,
+    jwt as never,
+    auditLogs as never,
+  );
+  return { service, prisma, jwt, auditLogs, createArgs: () => createArgs };
 }
 
 const registerDto = {
@@ -158,5 +167,38 @@ describe('AuthService.login', () => {
       password: 'secret123',
     });
     expect(result.accessToken).toBe('signed-token');
+  });
+});
+
+describe('AuthService.changePassword', () => {
+  it('rejects a wrong current password', async () => {
+    const { service } = makeService(realUser);
+    await expect(
+      service.changePassword(7, 'wrong', 'newsecret123'),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('updates the hash and writes an audit log', async () => {
+    const { service, prisma, auditLogs } = makeService(realUser);
+    await service.changePassword(7, 'secret123', 'newsecret123');
+
+    const update = prisma.user.update as jest.Mock;
+    const updateArgs = update.mock.calls[0][0] as {
+      where: { id: number };
+      data: { password: string };
+    };
+    expect(updateArgs.where.id).toBe(7);
+    expect(updateArgs.data.password).not.toBe('newsecret123');
+    await expect(
+      bcrypt.compare('newsecret123', updateArgs.data.password),
+    ).resolves.toBe(true);
+    expect(auditLogs.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entityType: 'USER',
+        entityId: 7,
+        action: 'PASSWORD_CHANGED',
+        performedById: 7,
+      }),
+    );
   });
 });

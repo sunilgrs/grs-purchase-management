@@ -13,6 +13,10 @@ import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { Feature } from '../auth/decorators/feature.decorator.js';
+import {
+  CurrentUser,
+  type AuthUser,
+} from '../auth/decorators/current-user.decorator.js';
 import { UpdatePermissionsDto } from './dto/update-permissions.dto.js';
 
 @Controller('users')
@@ -56,5 +60,14 @@ export class UsersController {
     @Body() updatePermissionsDto: UpdatePermissionsDto,
   ) {
     return this.usersService.updatePermissions(id, updatePermissionsDto);
+  }
+
+  @Roles('ADMIN')
+  @Post(':id/reset-password')
+  resetPassword(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.usersService.resetPassword(id, user.id);
   }
 }

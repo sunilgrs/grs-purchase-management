@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { CrudPage } from '../components/CrudPage'
 import type { CrudConfig } from '../components/CrudPage'
 import { ItemImportButton } from '../components/ItemImport'
-import { Badge } from '../components/ui'
+import { Badge, Button, ConfirmDialog, Modal } from '../components/ui'
+import { api } from '../lib/api'
 import type { Item, User, Vendor } from '../types'
 import { badgeColor } from '../lib/status'
 import { useAuth } from '../auth/useAuth'
@@ -102,12 +104,66 @@ function ItemsPage() {
 
 function UsersPage() {
   const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
+  const [resetTarget, setResetTarget] = useState<User | null>(null)
+  const [tempPassword, setTempPassword] = useState<string | null>(null)
+  const [resetName, setResetName] = useState('')
+  const [resetError, setResetError] = useState<string | null>(null)
+  const [resetting, setResetting] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const confirmReset = async () => {
+    if (!resetTarget) return
+    setResetting(true)
+    setResetError(null)
+    try {
+      const res = await api.post<{ temporaryPassword: string }>(
+        `/users/${resetTarget.id}/reset-password`,
+        {},
+      )
+      setTempPassword(res.temporaryPassword)
+      setResetName(resetTarget.name)
+      setResetTarget(null)
+    } catch (err) {
+      setResetError(err instanceof Error ? err.message : 'Could not reset password')
+    } finally {
+      setResetting(false)
+    }
+  }
+
+  const copyTemporaryPassword = async () => {
+    if (!tempPassword) return
+    try {
+      await navigator.clipboard.writeText(tempPassword)
+      setCopied(true)
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
+
+  const closeReset = () => {
+    setResetError(null)
+    setResetTarget(null)
+  }
+
+  const closeTempModal = () => {
+    setTempPassword(null)
+    setCopied(false)
+  }
+
   const config: CrudConfig<User> = {
     title: 'Users',
     endpoint: '/users',
-    subtitle: user?.role === 'ADMIN' ? 'Manage staff accounts' : 'Read-only list',
-    canDelete: user?.role === 'ADMIN',
+    subtitle: isAdmin ? 'Manage staff accounts' : 'Read-only list',
+    canDelete: isAdmin,
     isActive: (r) => r.status === 'ACTIVE',
+    extraActions: isAdmin
+      ? (r) => (
+          <Button size="sm" variant="ghost" onClick={() => setResetTarget(r)}>
+            Reset
+          </Button>
+        )
+      : undefined,
     columns: [
       { header: 'Name', render: (r) => <span className="font-medium text-emerald-950">{r.name}</span> },
       { header: 'Mobile', render: (r) => r.mobile },
@@ -165,7 +221,44 @@ function UsersPage() {
     }),
     deleteMessage: (r) => `Deactivate user "${r.name}"?`,
   }
-  return <CrudPage config={config} />
+  return (
+    <>
+      <CrudPage config={config} />
+      <ConfirmDialog
+        open={Boolean(resetTarget)}
+        title="Reset password"
+        message={
+          resetTarget
+            ? `Generate a temporary password for "${resetTarget.name}"? They can change it after signing in.`
+            : ''
+        }
+        error={resetError}
+        onCancel={closeReset}
+        onConfirm={confirmReset}
+        busy={resetting}
+        confirmLabel="Reset password"
+        busyLabel="Resetting…"
+        variant="secondary"
+      />
+      <Modal open={Boolean(tempPassword)} onClose={closeTempModal} title="Temporary password">
+        <p className="text-sm text-slate-600">
+          Share this temporary password with {resetName || 'the user'}. They can sign in with it
+          and change it afterwards.
+        </p>
+        <div className="mt-4 flex items-center gap-2">
+          <code className="flex-1 rounded-lg border border-emerald-100 bg-emerald-50/60 px-3 py-2 font-mono text-sm text-emerald-900">
+            {tempPassword}
+          </code>
+          <Button variant="secondary" onClick={copyTemporaryPassword}>
+            {copied ? 'Copied!' : 'Copy'}
+          </Button>
+        </div>
+        <div className="mt-5 flex justify-end">
+          <Button onClick={closeTempModal}>Done</Button>
+        </div>
+      </Modal>
+    </>
+  )
 }
 
 export { VendorsPage, ItemsPage, UsersPage }

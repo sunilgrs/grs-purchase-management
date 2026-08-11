@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import NotificationBell from './NotificationBell'
+import ChangePasswordDialog from './ChangePassword'
 
 const navSections = [
   {
@@ -41,6 +42,7 @@ export default function Layout() {
   const { user, logout, hasFeature } = useAuth()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -189,6 +191,17 @@ export default function Layout() {
               <NotificationBell placement="up" />
             </div>
             <button
+              onClick={() => setShowPassword(true)}
+              title="Change password"
+              className="rounded-md p-1.5 text-emerald-900/40 hover:bg-emerald-50 hover:text-emerald-700"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M7 11V8a5 5 0 0110 0v3" strokeLinecap="round" />
+                <rect x="4" y="11" width="16" height="10" rx="2" />
+                <path d="M12 15v3" strokeLinecap="round" />
+              </svg>
+            </button>
+            <button
               onClick={handleLogout}
               title="Logout"
               className="rounded-md p-1.5 text-emerald-900/40 hover:bg-emerald-50 hover:text-emerald-700"
@@ -205,6 +218,8 @@ export default function Layout() {
       <main className="px-4 py-5 pt-16 lg:ml-64 lg:px-8 lg:py-6 lg:pt-6">
         <Outlet />
       </main>
+
+      <ChangePasswordDialog open={showPassword} onClose={() => setShowPassword(false)} />
     </div>
   )
 }

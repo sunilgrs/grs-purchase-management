@@ -10,12 +10,14 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { PUBLIC_REGISTER_ROLES, RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { deserializePermissions } from '../common/permissions.js';
+import { AuditLogsService } from '../audit-logs/audit-logs.service.js';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly auditLogsService: AuditLogsService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -71,6 +73,36 @@ export class AuthService {
       ),
       accessToken: this.sign(user),
     };
+  }
+
+  async changePassword(
+    userId: number,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('Current password is incorrect');
+
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const password = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password },
+    });
+
+    await this.auditLogsService.log({
+      entityType: 'USER',
+      entityId: userId,
+      action: 'PASSWORD_CHANGED',
+      description: 'Password changed by the user',
+      performedById: userId,
+    });
+
+    return { ok: true };
   }
 
   private sign(user: {

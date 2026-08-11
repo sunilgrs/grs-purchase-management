@@ -2,9 +2,11 @@
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module.js';
 
 @Module({
   imports: [
+    AuditLogsModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET ?? 'grs-purchase-dev-secret',

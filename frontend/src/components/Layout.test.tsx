@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, cleanup, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import Layout from './Layout'
@@ -18,6 +18,10 @@ const mocks = vi.hoisted(() => ({
   } | null,
 }))
 
+const apiMock = vi.hoisted(() => ({
+  patch: vi.fn(),
+}))
+
 vi.mock('../auth/useAuth', () => ({
   useAuth: () => ({
     user: mocks.user,
@@ -26,6 +30,8 @@ vi.mock('../auth/useAuth', () => ({
     isAdmin: mocks.user?.role === 'ADMIN',
   }),
 }))
+
+vi.mock('../lib/api', () => ({ api: apiMock }))
 
 vi.mock('../hooks/useFetch', () => ({
   useFetch: () => ({ data: null, loading: false, error: null, reload: () => {} }),
@@ -42,6 +48,7 @@ describe('Layout', () => {
   beforeEach(() => {
     mocks.logout.mockReset()
     mocks.hasFeature.mockImplementation(() => true)
+    apiMock.patch.mockReset()
     mocks.user = {
       id: 1,
       name: 'Test User',
@@ -107,5 +114,37 @@ describe('Layout', () => {
     mocks.user = null
     renderPage()
     expect(screen.getByText('U')).toBeInTheDocument()
+  })
+
+  it('changes the password from the dialog', async () => {
+    apiMock.patch.mockResolvedValue({})
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(screen.getByTitle('Change password'))
+    await user.type(screen.getByLabelText(/current password/i), 'oldpass1')
+    await user.type(screen.getByLabelText(/^new password/i), 'newpass1')
+    await user.type(screen.getByLabelText(/confirm new password/i), 'newpass1')
+    const dialog = screen.getByRole('dialog')
+    await user.click(within(dialog).getByRole('button', { name: /^change password$/i }))
+    expect(apiMock.patch).toHaveBeenCalledWith('/auth/password', {
+      currentPassword: 'oldpass1',
+      newPassword: 'newpass1',
+    })
+    await waitFor(() =>
+      expect(screen.getByText(/your password has been changed/i)).toBeInTheDocument(),
+    )
+  })
+
+  it('rejects a change password form when passwords do not match', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(screen.getByTitle('Change password'))
+    await user.type(screen.getByLabelText(/current password/i), 'oldpass1')
+    await user.type(screen.getByLabelText(/^new password/i), 'newpass1')
+    await user.type(screen.getByLabelText(/confirm new password/i), 'different')
+    const dialog = screen.getByRole('dialog')
+    await user.click(within(dialog).getByRole('button', { name: /^change password$/i }))
+    expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument()
+    expect(apiMock.patch).not.toHaveBeenCalled()
   })
 })
