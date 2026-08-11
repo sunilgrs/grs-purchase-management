@@ -16,3 +16,10 @@ http://{$LAN_IP:192.168.1.33}:8080 {
 	encode gzip
 	reverse_proxy frontend:80
 }
+
+# Friendly hostname (http://ips-pms) resolved by the local dnsmasq DNS server
+# on this PC; phones set their Wi-Fi DNS to this PC's LAN IP.
+http://ips-pms {
+	encode gzip
+	reverse_proxy frontend:80
+}
