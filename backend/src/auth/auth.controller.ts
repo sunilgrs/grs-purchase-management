@@ -28,7 +28,10 @@ export class AuthController {
   }
 
   @Patch('password')
-  changePassword(@Body() dto: ChangePasswordDto, @CurrentUser() user: AuthUser) {
+  changePassword(
+    @Body() dto: ChangePasswordDto,
+    @CurrentUser() user: AuthUser,
+  ) {
     return this.authService.changePassword(
       user.id,
       dto.currentPassword,

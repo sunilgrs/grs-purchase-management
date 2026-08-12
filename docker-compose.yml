@@ -28,6 +28,9 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    volumes:
+      # Lets the phone download the Android APK straight from the app
+      - ./mobile/apk:/usr/share/nginx/html/apk:ro
 
   caddy:
     image: caddy:2-alpine

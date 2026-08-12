@@ -50,8 +50,14 @@ export interface SpendReport {
 export class ReportsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async spend(from?: string, to?: string, rawGroupBy?: string): Promise<SpendReport> {
-    const groupBy: ReportGroupBy = GROUP_BYS.includes(rawGroupBy as ReportGroupBy)
+  async spend(
+    from?: string,
+    to?: string,
+    rawGroupBy?: string,
+  ): Promise<SpendReport> {
+    const groupBy: ReportGroupBy = GROUP_BYS.includes(
+      rawGroupBy as ReportGroupBy,
+    )
       ? (rawGroupBy as ReportGroupBy)
       : 'month';
 
@@ -83,7 +89,10 @@ export class ReportsService {
       orderBy: { orderDate: 'asc' },
     });
 
-    const byKey = new Map<string, { label: string; poIds: Set<number>; spend: number }>();
+    const byKey = new Map<
+      string,
+      { label: string; poIds: Set<number>; spend: number }
+    >();
     if (groupBy === 'item') {
       for (const po of pos) {
         for (const line of po.items) {
@@ -102,7 +111,11 @@ export class ReportsService {
         const key = this.keyFor(po, groupBy);
         let entry = byKey.get(key);
         if (!entry) {
-          entry = { label: this.labelFor(po, groupBy), poIds: new Set(), spend: 0 };
+          entry = {
+            label: this.labelFor(po, groupBy),
+            poIds: new Set(),
+            spend: 0,
+          };
           byKey.set(key, entry);
         }
         entry.poIds.add(po.id);
@@ -113,7 +126,7 @@ export class ReportsService {
     }
 
     const rows: SpendRow[] = [...byKey.entries()]
-      .map(([key, entry]) => ({
+      .map(([, entry]) => ({
         label: entry.label,
         count: entry.poIds.size,
         spend: Math.round(entry.spend),

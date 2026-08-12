@@ -8,7 +8,7 @@ function makeService(user: unknown) {
     user: {
       findUnique: jest.fn(() => user),
       update: jest.fn((args: { where: { id: number }; data: unknown }) => ({
-        ...user,
+        ...(user as Record<string, unknown>),
         id: args.where.id,
       })),
     },

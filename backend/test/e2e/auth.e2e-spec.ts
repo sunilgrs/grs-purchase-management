@@ -1,10 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import {
-  createTestApp,
-  registerUser,
-  auth,
-} from './helpers.js';
+import { createTestApp, registerUser, auth } from './helpers.js';
 import { PrismaService } from '../../src/prisma/prisma.service.js';
 
 describe('Auth (e2e)', () => {

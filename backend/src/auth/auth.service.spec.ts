@@ -182,7 +182,7 @@ describe('AuthService.changePassword', () => {
     const { service, prisma, auditLogs } = makeService(realUser);
     await service.changePassword(7, 'secret123', 'newsecret123');
 
-    const update = prisma.user.update as jest.Mock;
+    const update = prisma.user.update;
     const updateArgs = update.mock.calls[0][0] as {
       where: { id: number };
       data: { password: string };

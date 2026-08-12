@@ -1,0 +1,9 @@
+{
+  "appId": "com.grs.purchase",
+  "appName": "GRS Purchase",
+  "webDir": "www",
+  "server": {
+    "url": "http://ips-pms",
+    "cleartext": true
+  }
+}

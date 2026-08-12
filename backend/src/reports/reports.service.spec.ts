@@ -37,13 +37,16 @@ describe('ReportsService', () => {
     const res = await service.spend(undefined, undefined, undefined);
     expect(prisma.purchaseOrder.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { orderDate: expect.objectContaining({ gte: expect.any(Date), lte: expect.any(Date) }) },
+        where: {
+          orderDate: expect.objectContaining({
+            gte: expect.any(Date),
+            lte: expect.any(Date),
+          }),
+        },
       }),
     );
     expect(res.groupBy).toBe('month');
-    expect(res.rows).toEqual([
-      { label: 'Jul 2026', count: 2, spend: 2200 },
-    ]);
+    expect(res.rows).toEqual([{ label: 'Jul 2026', count: 2, spend: 2200 }]);
     expect(res.total).toBe(2200);
     expect(res.count).toBe(2);
   });

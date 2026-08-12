@@ -97,7 +97,11 @@ describe('Reports (e2e)', () => {
       .get('/api/reports/spend?groupBy=vendor&from=2026-01-01&to=2026-12-31')
       .set(auth(token))
       .expect(200);
-    expect(vendorRes.body.rows.some((r: { label: string }) => r.label === 'E2E Vendor A')).toBe(true);
+    expect(
+      vendorRes.body.rows.some(
+        (r: { label: string }) => r.label === 'E2E Vendor A',
+      ),
+    ).toBe(true);
   });
 
   it('filters to the requested date range', async () => {
