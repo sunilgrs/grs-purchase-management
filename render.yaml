@@ -1,3 +1,11 @@
+databases:
+  # Free managed PostgreSQL — data persists across deploys
+  - name: grs-purchase-db
+    plan: free
+    region: singapore
+    databaseName: grs_purchase
+    user: grs_user
+
 services:
   # Backend NestJS API Service
   - type: web
@@ -14,6 +22,14 @@ services:
         value: 3000
       - key: JWT_SECRET
         generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION
+        value: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: grs-purchase-db
+          property: connectionString
       - key: CORS_ORIGINS
         fromService:
           type: web
