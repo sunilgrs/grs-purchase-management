@@ -203,7 +203,7 @@ npm run test:e2e
 npm run lint
 npm run build
 
-# Frontend — unit/component tests (249 tests) with coverage
+# Frontend — unit/component tests (250 tests) with coverage
 cd frontend
 npm run test
 npm run test:coverage

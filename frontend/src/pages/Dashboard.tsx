@@ -235,9 +235,11 @@ function AlertCard({
         <p className="text-sm font-medium text-slate-800">{title}</p>
         <p className="mt-0.5 text-xs text-slate-400">{hint}</p>
       </div>
-      <svg className="h-5 w-5 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" />
-      </svg>
+      {enabled && (
+        <svg className="h-5 w-5 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" />
+        </svg>
+      )}
     </Card>
   )
   if (!enabled) return card
