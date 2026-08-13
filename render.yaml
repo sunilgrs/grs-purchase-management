@@ -13,9 +13,13 @@ services:
     env: node
     region: singapore
     plan: free
-    buildCommand: cd backend && npm install && npm run build && npx prisma db push && npx prisma db seed
+    repo: https://github.com/sunilnagaragatta/grs-purchase-management.git
+    branch: main
+    buildCommand: cd backend && npm install --include=dev && npm run build && npx prisma migrate deploy && npx prisma db seed
     startCommand: cd backend && npm run start:prod
     envVars:
+      - key: NODE_VERSION
+        value: "24"
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -24,8 +28,6 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 1d
-      - key: PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION
-        value: true
       - key: DATABASE_URL
         fromDatabase:
           name: grs-purchase-db
@@ -42,13 +44,17 @@ services:
     env: static
     region: singapore
     plan: free
-    buildCommand: cd frontend && npm install && npm run build
+    repo: https://github.com/sunilnagaragatta/grs-purchase-management.git
+    branch: main
+    buildCommand: cd frontend && npm install --include=dev && npm run build
     staticPublishPath: ./frontend/dist
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
     envVars:
+      - key: NODE_VERSION
+        value: "24"
       - key: VITE_API_URL
         fromService:
           type: web

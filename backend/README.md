@@ -10,18 +10,20 @@ role-based access control, e2e test coverage.
   - `grs_test` (e2e)
 - Suggested setup (run as the postgres superuser):
   ```sql
-  CREATE ROLE grs_user WITH LOGIN PASSWORD 'grs_dev_password';
+  CREATE ROLE grs_user WITH LOGIN PASSWORD 'grs_dev_password' CREATEDB;
   CREATE DATABASE grs_purchase OWNER grs_user;
   CREATE DATABASE grs_test OWNER grs_user;
   ```
+  `CREATEDB` is required so `prisma migrate dev/reset` can create shadow databases.
+  If it cannot be granted, use `node scripts/reset-schema.cjs` (drops and recreates the
+  `public` schema) followed by `npx prisma migrate deploy`.
 
 ## Setup
 
 ```bash
 npm install
 cp .env.example .env        # then set DATABASE_URL if needed
-npx prisma db push          # create schema in the dev database
-npx prisma db seed          # load demo data (4 users, stores, vendors, items, requirements)
+npx prisma migrate reset    # create schema from migrations and seed demo data
 ```
 
 `.env` is gitignored; use `.env.example` as a template. The API rate-limits requests
@@ -50,16 +52,21 @@ npm run build
 ```
 
 E2E tests must run single-threaded (`--runInBand`, already configured in `test:e2e`).
-The e2e setup (`test/global-setup.ts`) resets `grs_test` via `prisma db push --force-reset`.
+The e2e setup (`test/global-setup.ts`) resets `grs_test` via `scripts/reset-schema.cjs`
+and then applies migrations with `prisma migrate deploy`.
 
 ## Prisma
 
 ```bash
 npx prisma studio        # browse data
 npx prisma migrate dev   # create a migration after schema changes
-npx prisma db seed       # re-seed demo data (wipes existing rows)
-tsx prisma/reset.ts      # wipe all data, keep a single admin account
+npx prisma migrate deploy # apply pending migrations (CI / Render.com)
+npx prisma migrate reset  # drop, replay migrations, and re-seed
+npx prisma db seed        # seed demo data (no-op if users already exist)
+node scripts/reset-schema.cjs # drop + recreate the public schema (no CREATEDB needed)
+tsx prisma/reset.ts       # wipe all data, keep a single admin account
 ```
 
-Note: Prisma 7 asks for `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` consent for
-`db push` operations.
+Deploys on Render.com run `prisma migrate deploy` (see `render.yaml`). For environments
+where `grs_user` lacks `CREATEDB`, `migrate reset`/`migrate dev` fall back to
+`reset-schema.cjs` + `migrate deploy`.

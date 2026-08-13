@@ -20,6 +20,15 @@ const datePart = (d: Date) => {
 const seq = (prefix: string, n: number) => `${prefix}-${datePart(new Date())}-${String(n).padStart(4, '0')}`;
 
 async function main() {
+  const userCount = await prisma.user.count();
+  if (userCount > 0) {
+    console.log(
+      `Database already has ${userCount} user(s); skipping seed. ` +
+        'Use `prisma migrate reset` to wipe and re-seed.',
+    );
+    return;
+  }
+
   await prisma.discrepancy.deleteMany();
   await prisma.deliveryItem.deleteMany();
   await prisma.delivery.deleteMany();
