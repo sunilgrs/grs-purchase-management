@@ -1,6 +1,15 @@
 const TOKEN_KEY = 'grs_token'
 const USER_KEY = 'grs_user'
 
+// Absolute API base when deployed (VITE_API_URL = hostname, https implied),
+// otherwise same-origin `/api` (Vite dev proxy / nginx).
+const apiUrl = import.meta.env.VITE_API_URL as string | undefined
+export const API_BASE = apiUrl
+  ? apiUrl.includes('://')
+    ? apiUrl
+    : `https://${apiUrl}`
+  : '/api'
+
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
 }
@@ -43,7 +52,7 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
     headers['Content-Type'] = 'application/json'
   if (token) headers['Authorization'] = `Bearer ${token}`
 
-  const res = await fetch(`/api${path}`, { ...options, headers })
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
 
   if (!res.ok) {
     let message = `Request failed (${res.status})`
