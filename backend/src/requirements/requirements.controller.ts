@@ -74,7 +74,7 @@ export class RequirementsController {
   }
 
   @Post(':id/approve')
-  @Roles('STORE_MANAGER', 'MANAGER', 'ADMIN')
+  @Roles('MANAGER', 'ADMIN')
   managerApprove(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: AssignVendorDto,
@@ -84,7 +84,7 @@ export class RequirementsController {
   }
 
   @Post(':id/reject')
-  @Roles('STORE_MANAGER', 'MANAGER', 'ADMIN')
+  @Roles('MANAGER', 'ADMIN')
   managerReject(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: ReviewRequirementDto,

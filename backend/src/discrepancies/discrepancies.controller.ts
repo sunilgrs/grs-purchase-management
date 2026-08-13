@@ -70,7 +70,7 @@ export class DiscrepanciesController {
   }
 
   @Post(':id/manager-review')
-  @Roles('STORE_MANAGER', 'MANAGER', 'ADMIN')
+  @Roles('MANAGER', 'ADMIN')
   managerReview(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: DiscrepancyReviewDto,

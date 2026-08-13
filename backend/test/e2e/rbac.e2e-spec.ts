@@ -238,7 +238,7 @@ describe('RBAC (e2e)', () => {
         403,
       );
     });
-    it('STORE_MANAGER can manager-approve', async () => {
+    it('STORE_MANAGER cannot manager-approve', async () => {
       const created = await api(
         'post',
         '/api/requirements',
@@ -262,10 +262,10 @@ describe('RBAC (e2e)', () => {
         `/api/requirements/${created.body.id}/approve`,
         approveBody(),
         ctx.storeManager.accessToken,
-        201,
+        403,
       );
     });
-    it('STORE_MANAGER can reject', async () => {
+    it('STORE_MANAGER cannot reject', async () => {
       const created = await api(
         'post',
         '/api/requirements',
@@ -283,7 +283,7 @@ describe('RBAC (e2e)', () => {
         `/api/requirements/${created.body.id}/reject`,
         { approve: false },
         ctx.storeManager.accessToken,
-        201,
+        403,
       );
     });
     it('MANAGER can reject', async () => {
@@ -420,7 +420,7 @@ describe('RBAC (e2e)', () => {
         'post',
         `/api/requirements/${created.body.id}/approve`,
         approveBody(),
-        ctx.storeManager.accessToken,
+        ctx.manager.accessToken,
       ).expect(201);
       await check(
         'post',
@@ -514,7 +514,7 @@ describe('RBAC (e2e)', () => {
         201,
       );
     });
-    it('STORE_MANAGER can manager-review', async () => {
+    it('STORE_MANAGER cannot manager-review', async () => {
       const dis = await api(
         'post',
         '/api/discrepancies',
@@ -532,7 +532,7 @@ describe('RBAC (e2e)', () => {
         `/api/discrepancies/${dis.body.id}/manager-review`,
         { approve: true },
         ctx.storeManager.accessToken,
-        201,
+        403,
       );
     });
     it('STORE_KEEPER cannot read discrepancy whatsapp-message', async () => {
