@@ -347,4 +347,96 @@ describe('Purchase workflow (e2e)', () => {
       .expect(200);
     expect(delivered.body.status).toBe('PARTIAL');
   });
+
+  it('edits a DRAFT requirement as the owning store keeper', async () => {
+    const token = ctx.storeKeeper.accessToken;
+
+    const create = await server()
+      .post('/api/requirements')
+      .set(auth(token))
+      .send(makeRequirement())
+      .expect(201);
+    const reqId = create.body.id;
+    expect(create.body.status).toBe('DRAFT');
+
+    const updated = await server()
+      .patch(`/api/requirements/${reqId}`)
+      .set(auth(token))
+      .send({
+        priority: 'URGENT',
+        remarks: 'Edited before submission',
+        requiredDate: new Date(Date.now() + 20 * 86400000)
+          .toISOString()
+          .slice(0, 10),
+        items: [{ itemId: ctx.itemBId, quantity: 9 }],
+      })
+      .expect(200);
+
+    expect(updated.body.priority).toBe('URGENT');
+    expect(updated.body.remarks).toBe('Edited before submission');
+    expect(updated.body.items).toHaveLength(1);
+    expect(updated.body.items[0].itemId).toBe(ctx.itemBId);
+    expect(updated.body.items[0].quantity).toBe(9);
+    expect(updated.body.status).toBe('DRAFT');
+
+    // PATCH cannot change status or approvals even if sent
+    const guarded = await server()
+      .patch(`/api/requirements/${reqId}`)
+      .set(auth(token))
+      .send({ status: 'COMPLETED', approvedById: ctx.manager.id })
+      .expect(200);
+    expect(guarded.body.status).toBe('DRAFT');
+    expect(guarded.body.approvedById).toBeNull();
+  });
+
+  it('forbids a store keeper from editing another users DRAFT requirement', async () => {
+    const created = await server()
+      .post('/api/requirements')
+      .set(auth(ctx.storeManager.accessToken))
+      .send(makeRequirement({ requestedById: ctx.storeManager.id }))
+      .expect(201);
+
+    await server()
+      .patch(`/api/requirements/${created.body.id}`)
+      .set(auth(ctx.storeKeeper.accessToken))
+      .send({ remarks: 'Hijacked' })
+      .expect(403);
+  });
+
+  it('rejects editing a submitted requirement', async () => {
+    const token = ctx.storeKeeper.accessToken;
+
+    const create = await server()
+      .post('/api/requirements')
+      .set(auth(token))
+      .send(makeRequirement())
+      .expect(201);
+    await server()
+      .post(`/api/requirements/${create.body.id}/submit`)
+      .set(auth(token))
+      .send({})
+      .expect(201);
+
+    await server()
+      .patch(`/api/requirements/${create.body.id}`)
+      .set(auth(token))
+      .send({ remarks: 'Too late' })
+      .expect(400);
+  });
+
+  it('allows a manager to edit any DRAFT requirement', async () => {
+    const created = await server()
+      .post('/api/requirements')
+      .set(auth(ctx.storeKeeper.accessToken))
+      .send(makeRequirement())
+      .expect(201);
+
+    const updated = await server()
+      .patch(`/api/requirements/${created.body.id}`)
+      .set(auth(ctx.manager.accessToken))
+      .send({ priority: 'HIGH', remarks: 'Manager tweak' })
+      .expect(200);
+    expect(updated.body.priority).toBe('HIGH');
+    expect(updated.body.remarks).toBe('Manager tweak');
+  });
 });

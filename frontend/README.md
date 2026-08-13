@@ -16,7 +16,7 @@ Serves on `http://localhost:5173` and proxies `/api` to the backend at
 ## Test
 
 ```bash
-npm run test           # 251 tests across 19 files (Vitest + Testing Library + jsdom)
+npm run test           # 255 tests across 19 files (Vitest + Testing Library + jsdom)
 npm run test:coverage  # with coverage report (thresholds enforced in vitest.config.ts)
 npm run lint           # oxlint
 npm run build          # tsc -b && vite build

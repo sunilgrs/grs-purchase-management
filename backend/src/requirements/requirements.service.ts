@@ -1,5 +1,6 @@
 ﻿import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,6 +9,7 @@ import { AuditLogsService } from '../audit-logs/audit-logs.service.js';
 import { PurchaseOrdersService } from '../purchase-orders/purchase-orders.service.js';
 import { CreateRequirementDto } from './dto/create-requirement.dto.js';
 import { UpdateRequirementDto } from './dto/update-requirement.dto.js';
+import type { AuthUser } from '../auth/decorators/current-user.decorator.js';
 import {
   AssignVendorDto,
   ReviewRequirementDto,
@@ -98,8 +100,26 @@ export class RequirementsService {
     return requirement;
   }
 
-  async update(id: number, updateRequirementDto: UpdateRequirementDto) {
-    await this.findOne(id);
+  async update(
+    id: number,
+    updateRequirementDto: UpdateRequirementDto,
+    currentUser?: AuthUser,
+  ) {
+    const existing = await this.findOne(id);
+
+    if (!['DRAFT', 'REJECTED'].includes(existing.status)) {
+      throw new BadRequestException(
+        'Only draft or rejected requirements can be edited',
+      );
+    }
+    if (
+      currentUser?.role === 'STORE_KEEPER' &&
+      existing.requestedById !== currentUser.id
+    ) {
+      throw new ForbiddenException(
+        'You can only edit requirements you created',
+      );
+    }
 
     if (updateRequirementDto.storeId) {
       await this.ensureReference('store', updateRequirementDto.storeId);
@@ -112,15 +132,13 @@ export class RequirementsService {
       storeId: updateRequirementDto.storeId,
       requestedById: updateRequirementDto.requestedById,
       priority: updateRequirementDto.priority,
-      status: updateRequirementDto.status,
-      approvedById: updateRequirementDto.approvedById,
       remarks: updateRequirementDto.remarks,
     };
     if (updateRequirementDto.requiredDate) {
       data.requiredDate = new Date(updateRequirementDto.requiredDate);
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx) => {
       if (updateRequirementDto.items) {
         await tx.requirementItem.deleteMany({ where: { requirementId: id } });
         data.items = {
@@ -136,6 +154,16 @@ export class RequirementsService {
         include: REQUIREMENT_INCLUDE,
       });
     });
+
+    await this.auditLogsService.log({
+      entityType: 'Requirement',
+      entityId: id,
+      action: 'UPDATED',
+      description: `Requirement ${existing.requirementNo} updated`,
+      performedById: currentUser?.id,
+    });
+
+    return updated;
   }
 
   async remove(id: number) {

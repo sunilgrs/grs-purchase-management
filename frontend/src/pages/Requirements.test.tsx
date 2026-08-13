@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   items: [] as Item[],
   vendors: [] as Vendor[],
   apiPost: vi.fn(),
+  apiPatch: vi.fn(),
   apiGet: vi.fn(),
 }))
 
@@ -44,7 +45,7 @@ vi.mock('../hooks/useFetch', () => ({
 }))
 
 vi.mock('../lib/api', () => ({
-  api: { get: mocks.apiGet, post: mocks.apiPost },
+  api: { get: mocks.apiGet, post: mocks.apiPost, patch: mocks.apiPatch },
 }))
 
 const store: Store = { id: 1, storeName: 'IPS Main Store', location: null, createdAt: '2026-01-01T00:00:00Z' }
@@ -123,6 +124,7 @@ describe('RequirementsPage', () => {
     mocks.items = []
     mocks.vendors = []
     mocks.apiPost.mockReset()
+    mocks.apiPatch.mockReset()
     mocks.apiGet.mockReset()
   })
 
@@ -252,6 +254,55 @@ describe('RequirementsPage', () => {
     await userEv.click(screen.getByRole('button', { name: /new requirement/i }))
     const dialog = screen.getByRole('dialog')
     expect(within(dialog).getByLabelText(/store/i)).toHaveValue('1')
+  })
+
+  it('lets a store keeper edit their own DRAFT requirement before submitting', async () => {
+    const userEv = userEvent.setup()
+    mocks.role = 'STORE_KEEPER'
+    mocks.stores = [store]
+    mocks.users = [user]
+    mocks.items = [item]
+    mocks.reqs = [makeReq({ status: 'DRAFT', remarks: 'Original note', items: [reqItem()] })]
+    mocks.apiPatch.mockResolvedValue(makeReq({ status: 'DRAFT', remarks: 'Original note updated' }))
+    renderPage()
+    await userEv.click(screen.getByRole('button', { name: /^edit$/i }))
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText(/edit requirement/i)).toBeInTheDocument()
+    expect(within(dialog).getByLabelText(/store/i)).toHaveValue('1')
+    expect(within(dialog).getByLabelText(/requested by/i)).toHaveValue('1')
+    expect(within(dialog).getByLabelText(/required date/i)).toHaveValue('2026-09-01')
+    expect(within(dialog).getByRole('textbox')).toHaveValue('Original note')
+    await userEv.type(within(dialog).getByRole('textbox'), ' updated')
+    await userEv.click(within(dialog).getByRole('button', { name: /save changes/i }))
+    expect(mocks.apiPatch).toHaveBeenCalledWith('/requirements/1', {
+      storeId: 1,
+      requestedById: 1,
+      requiredDate: '2026-09-01',
+      priority: 'HIGH',
+      remarks: 'Original note updated',
+      items: [{ itemId: 1, quantity: 10 }],
+    })
+  })
+
+  it('hides Edit for a draft created by another store keeper', () => {
+    mocks.role = 'STORE_KEEPER'
+    mocks.reqs = [makeReq({ status: 'DRAFT', requestedById: 2 })]
+    renderPage()
+    expect(screen.queryByRole('button', { name: /^edit$/i })).not.toBeInTheDocument()
+  })
+
+  it('hides Edit once a requirement has been submitted', () => {
+    mocks.role = 'STORE_KEEPER'
+    mocks.reqs = [makeReq({ status: 'SUBMITTED' })]
+    renderPage()
+    expect(screen.queryByRole('button', { name: /^edit$/i })).not.toBeInTheDocument()
+  })
+
+  it('shows Edit to a manager for any DRAFT requirement', () => {
+    mocks.role = 'MANAGER'
+    mocks.reqs = [makeReq({ status: 'DRAFT', requestedById: 2 })]
+    renderPage()
+    expect(screen.getByRole('button', { name: /^edit$/i })).toBeInTheDocument()
   })
 
   it('approves a requirement in store manager review', async () => {

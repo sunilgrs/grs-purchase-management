@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useFocusParam } from '../hooks/useFocus'
 import { ItemLineEditor } from '../components/ItemLineEditor'
 import type { LineDraft } from '../components/ItemLineEditor'
+import { newLine } from '../lib/lines'
 import {
   Badge,
   Button,
@@ -28,6 +29,12 @@ const DEFAULT_STORE_NAME = 'IPS Main Store'
 const defaultStoreId = (list: Store[] | null | undefined): string => {
   const store = list?.find((s) => s.storeName === DEFAULT_STORE_NAME) ?? list?.[0]
   return store ? String(store.id) : ''
+}
+
+const toDateInput = (iso: string): string => {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 interface ApproveLine {
@@ -63,6 +70,10 @@ export default function RequirementsPage() {
   const canManager = role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
   const canWhatsApp = role === 'MANAGER' || role === 'ADMIN'
   const canVerify = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
+  const canEdit = (r: Requirement) =>
+    canCreate &&
+    (r.status === 'DRAFT' || r.status === 'REJECTED') &&
+    (role !== 'STORE_KEEPER' || r.requestedById === user?.id)
   const { data, loading, error, reload } = useFetch<Requirement[]>('/requirements')
   const { data: stores } = useFetch<Store[]>('/stores')
   const { data: users } = useFetch<User[]>('/users')
@@ -71,6 +82,7 @@ export default function RequirementsPage() {
   const action = useApiAction()
 
   const [showCreate, setShowCreate] = useState(false)
+  const [editing, setEditing] = useState<Requirement | null>(null)
   const [viewing, setViewing] = useState<Requirement | null>(null)
   const [reviewReq, setReviewReq] = useState<Requirement | null>(null)
   const [approveReq, setApproveReq] = useState<Requirement | null>(null)
@@ -96,8 +108,26 @@ export default function RequirementsPage() {
   }, [focusId, data, clearFocus])
 
   const openCreate = () => {
+    setEditing(null)
     setForm({ storeId: defaultStoreId(stores), requestedById: '', requiredDate: '', priority: 'NORMAL', remarks: '' })
     setLines([])
+    setShowCreate(true)
+  }
+
+  const openEdit = (r: Requirement) => {
+    setEditing(r)
+    setForm({
+      storeId: String(r.storeId),
+      requestedById: String(r.requestedById),
+      requiredDate: toDateInput(r.requiredDate),
+      priority: r.priority,
+      remarks: r.remarks ?? '',
+    })
+    setLines(
+      (r.items ?? []).map((i) =>
+        newLine({ itemId: String(i.itemId), quantity: String(i.quantity) }),
+      ),
+    )
     setShowCreate(true)
   }
 
@@ -117,9 +147,12 @@ export default function RequirementsPage() {
       remarks: form.remarks || undefined,
       items: lines.map((l) => ({ itemId: Number(l.itemId), quantity: Number(l.quantity) })),
     }
-    const res = await action.run(() => api.post<Requirement>('/requirements', payload))
+    const res = editing
+      ? await action.run(() => api.patch<Requirement>(`/requirements/${editing.id}`, payload))
+      : await action.run(() => api.post<Requirement>('/requirements', payload))
     if (res) {
       setShowCreate(false)
+      setEditing(null)
       reload()
       setViewing(res)
     }
@@ -184,6 +217,11 @@ export default function RequirementsPage() {
                 <td className="px-4 py-3">{r._count?.items ?? r.items?.length ?? 0}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex flex-wrap items-center justify-end gap-1.5">
+                    {canEdit(r) ? (
+                      <Button size="sm" variant="secondary" onClick={() => openEdit(r)}>
+                        Edit
+                      </Button>
+                    ) : null}
                     {canSubmit && (r.status === 'DRAFT' || r.status === 'REJECTED' || r.status === 'SUBMITTED') ? (
                       <Button
                         size="sm"
@@ -247,7 +285,15 @@ export default function RequirementsPage() {
         )}
       </Card>
 
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="New Requirement" wide>
+      <Modal
+        open={showCreate}
+        onClose={() => {
+          setShowCreate(false)
+          setEditing(null)
+        }}
+        title={editing ? `Edit Requirement — ${editing.requirementNo}` : 'New Requirement'}
+        wide
+      >
         <form onSubmit={submit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <Select label="Store" required value={form.storeId} onChange={(e) => setForm({ ...form, storeId: e.target.value })}>
@@ -293,7 +339,7 @@ export default function RequirementsPage() {
           <div className="flex items-center justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => setShowCreate(false)}>Cancel</Button>
             <Button type="submit" disabled={action.submitting}>
-              {action.submitting ? 'Creating…' : 'Create Requirement'}
+              {action.submitting ? (editing ? 'Saving…' : 'Creating…') : editing ? 'Save Changes' : 'Create Requirement'}
             </Button>
           </div>
         </form>

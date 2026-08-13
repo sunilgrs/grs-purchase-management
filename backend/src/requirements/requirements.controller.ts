@@ -43,11 +43,13 @@ export class RequirementsController {
   }
 
   @Patch(':id')
+  @Roles('STORE_KEEPER', 'STORE_MANAGER', 'MANAGER', 'ADMIN')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateRequirementDto: UpdateRequirementDto,
+    @CurrentUser() user: AuthUser,
   ) {
-    return this.requirementsService.update(id, updateRequirementDto);
+    return this.requirementsService.update(id, updateRequirementDto, user);
   }
 
   @Delete(':id')
