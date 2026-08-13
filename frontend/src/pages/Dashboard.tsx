@@ -43,25 +43,27 @@ function StatCard({
   value,
   to,
   accent,
+  enabled = true,
 }: {
   label: string
   value: number
   to: string
   accent: string
+  enabled?: boolean
 }) {
-  return (
-    <Link to={to} className="block">
-      <Card className="px-5 py-4 transition-shadow hover:shadow-md">
-        <div className={`mb-2 h-1.5 w-8 rounded-full ${accent}`} />
-        <p className="text-2xl font-semibold text-emerald-950">{value}</p>
-        <p className="mt-0.5 text-sm text-slate-500">{label}</p>
-      </Card>
-    </Link>
+  const card = (
+    <Card className={`px-5 py-4 ${enabled ? 'transition-shadow hover:shadow-md' : ''}`}>
+      <div className={`mb-2 h-1.5 w-8 rounded-full ${accent}`} />
+      <p className="text-2xl font-semibold text-emerald-950">{value}</p>
+      <p className="mt-0.5 text-sm text-slate-500">{label}</p>
+    </Card>
   )
+  if (!enabled) return card
+  return <Link to={to} className="block">{card}</Link>
 }
 
 export default function Dashboard() {
-  const { user } = useAuth()
+  const { user, hasFeature } = useAuth()
   const summary = useFetch<DashboardSummary>('/dashboard/summary')
   const analytics = useFetch<DashboardAnalytics>('/dashboard/analytics')
 
@@ -81,16 +83,16 @@ export default function Dashboard() {
       ) : (
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <StatCard label="Vendors" value={summary.data.vendors} to="/vendors" accent="bg-violet-500" />
-            <StatCard label="Items" value={summary.data.items} to="/items" accent="bg-emerald-500" />
-            <StatCard label="Users" value={summary.data.users} to="/users" accent="bg-amber-500" />
-            <StatCard label="Requirements" value={summary.data.requirements} to="/requirements" accent="bg-cyan-500" />
+            <StatCard label="Vendors" value={summary.data.vendors} to="/vendors" accent="bg-violet-500" enabled={hasFeature('vendors')} />
+            <StatCard label="Items" value={summary.data.items} to="/items" accent="bg-emerald-500" enabled={hasFeature('items')} />
+            <StatCard label="Users" value={summary.data.users} to="/users" accent="bg-amber-500" enabled={hasFeature('users')} />
+            <StatCard label="Requirements" value={summary.data.requirements} to="/requirements" accent="bg-cyan-500" enabled={hasFeature('requirements')} />
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <StatCard label="Purchase Orders" value={summary.data.purchaseOrders} to="/purchase-orders" accent="bg-indigo-500" />
-            <StatCard label="Deliveries" value={summary.data.deliveries} to="/deliveries" accent="bg-teal-500" />
-            <StatCard label="Discrepancies" value={summary.data.discrepancies} to="/discrepancies" accent="bg-rose-500" />
+            <StatCard label="Purchase Orders" value={summary.data.purchaseOrders} to="/purchase-orders" accent="bg-indigo-500" enabled={hasFeature('purchase-orders')} />
+            <StatCard label="Deliveries" value={summary.data.deliveries} to="/deliveries" accent="bg-teal-500" enabled={hasFeature('deliveries')} />
+            <StatCard label="Discrepancies" value={summary.data.discrepancies} to="/discrepancies" accent="bg-rose-500" enabled={hasFeature('discrepancies')} />
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -100,6 +102,7 @@ export default function Dashboard() {
               hint="Awaiting approval to become purchase orders"
               to="/requirements"
               color={summary.data.openRequirements > 0 ? 'text-amber-600' : 'text-slate-400'}
+              enabled={hasFeature('requirements')}
             />
             <AlertCard
               title="POs In Progress"
@@ -107,6 +110,7 @@ export default function Dashboard() {
               hint="Partially or not yet delivered"
               to="/purchase-orders"
               color={summary.data.inProgressPos > 0 ? 'text-emerald-600' : 'text-slate-400'}
+              enabled={hasFeature('purchase-orders')}
             />
             <AlertCard
               title="Open Discrepancies"
@@ -114,6 +118,7 @@ export default function Dashboard() {
               hint="Damaged / short / mismatched items to resolve"
               to="/discrepancies"
               color={summary.data.openDiscrepancies > 0 ? 'text-red-600' : 'text-slate-400'}
+              enabled={hasFeature('discrepancies')}
             />
           </div>
 
@@ -214,25 +219,27 @@ function AlertCard({
   hint,
   to,
   color,
+  enabled = true,
 }: {
   title: string
   count: number
   hint: string
   to: string
   color: string
+  enabled?: boolean
 }) {
-  return (
-    <Link to={to}>
-      <Card className="flex items-center justify-between px-5 py-4 transition-shadow hover:shadow-md">
-        <div>
-          <p className={`text-2xl font-semibold ${color}`}>{count}</p>
-          <p className="text-sm font-medium text-slate-800">{title}</p>
-          <p className="mt-0.5 text-xs text-slate-400">{hint}</p>
-        </div>
-        <svg className="h-5 w-5 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" />
-        </svg>
-      </Card>
-    </Link>
+  const card = (
+    <Card className={`flex items-center justify-between px-5 py-4 ${enabled ? 'transition-shadow hover:shadow-md' : ''}`}>
+      <div>
+        <p className={`text-2xl font-semibold ${color}`}>{count}</p>
+        <p className="text-sm font-medium text-slate-800">{title}</p>
+        <p className="mt-0.5 text-xs text-slate-400">{hint}</p>
+      </div>
+      <svg className="h-5 w-5 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" />
+      </svg>
+    </Card>
   )
+  if (!enabled) return card
+  return <Link to={to}>{card}</Link>
 }

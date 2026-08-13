@@ -17,10 +17,11 @@ const mocks = vi.hoisted(() => ({
   data: null as DashboardSummary | null,
   analytics: null as DashboardAnalytics | null,
   loading: false,
+  hasFeature: (_feature: string): boolean => true,
 }))
 
 vi.mock('../auth/useAuth', () => ({
-  useAuth: () => ({ user: mocks.user }),
+  useAuth: () => ({ user: mocks.user, hasFeature: mocks.hasFeature }),
 }))
 
 vi.mock('../hooks/useFetch', () => ({
@@ -64,6 +65,7 @@ describe('Dashboard', () => {
     mocks.loading = false
     mocks.data = summary()
     mocks.analytics = analytics()
+    mocks.hasFeature = () => true
   })
 
   afterEach(() => {
@@ -115,6 +117,34 @@ describe('Dashboard', () => {
 
     const openDisp = screen.getByRole('link', { name: /open discrepancies/i })
     expect(within(openDisp).getByText('1')).toBeInTheDocument()
+  })
+
+  it('renders cards without links when the user lacks the feature', () => {
+    mocks.hasFeature = (feature: string) =>
+      ['dashboard', 'requirements', 'deliveries', 'discrepancies'].includes(feature)
+    mocks.data = summary({
+      vendors: 2,
+      items: 3,
+      users: 4,
+      requirements: 3,
+      purchaseOrders: 2,
+      deliveries: 1,
+      discrepancies: 2,
+    })
+    renderPage()
+
+    expect(screen.getAllByText('2').length).toBeGreaterThan(0)
+    expect(screen.getByText('Vendors')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /^2 Vendors/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /^3 Items/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /^4 Users/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /^2 Purchase Orders/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^3 Requirements/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^1 Deliveries/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^2 Discrepancies/ })).toBeInTheDocument()
+
+    const inProgress = screen.getByText('POs In Progress')
+    expect(inProgress.closest('a')).toBeNull()
   })
 
   it('lists recent purchase orders', () => {
