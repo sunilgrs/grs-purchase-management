@@ -23,6 +23,12 @@ import { PrintButton, PrintSheet } from '../components/print'
 import type { Item, Requirement, Store, User, Vendor } from '../types'
 
 const priorities = ['NORMAL', 'HIGH', 'URGENT']
+const DEFAULT_STORE_NAME = 'IPS Main Store'
+
+const defaultStoreId = (list: Store[] | null | undefined): string => {
+  const store = list?.find((s) => s.storeName === DEFAULT_STORE_NAME) ?? list?.[0]
+  return store ? String(store.id) : ''
+}
 
 interface ApproveLine {
   itemId: number
@@ -90,10 +96,16 @@ export default function RequirementsPage() {
   }, [focusId, data, clearFocus])
 
   const openCreate = () => {
-    setForm({ storeId: '', requestedById: '', requiredDate: '', priority: 'NORMAL', remarks: '' })
+    setForm({ storeId: defaultStoreId(stores), requestedById: '', requiredDate: '', priority: 'NORMAL', remarks: '' })
     setLines([])
     setShowCreate(true)
   }
+
+  useEffect(() => {
+    if (!showCreate || form.storeId) return
+    const defaultId = defaultStoreId(stores)
+    if (defaultId) setForm((f) => (f.storeId ? f : { ...f, storeId: defaultId }))
+  }, [showCreate, stores, form.storeId])
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()

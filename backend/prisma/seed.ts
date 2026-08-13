@@ -19,9 +19,27 @@ const datePart = (d: Date) => {
 
 const seq = (prefix: string, n: number) => `${prefix}-${datePart(new Date())}-${String(n).padStart(4, '0')}`;
 
+const DEFAULT_STORES = [
+  { storeName: 'IPS Main Store', location: 'Ground Floor, HQ' },
+  { storeName: 'Central Warehouse', location: 'Industrial Area' },
+];
+
+async function ensureDefaultStores() {
+  for (const store of DEFAULT_STORES) {
+    const existing = await prisma.store.findUnique({
+      where: { storeName: store.storeName },
+    });
+    if (!existing) {
+      await prisma.store.create({ data: store });
+      console.log(`Created default store: ${store.storeName}`);
+    }
+  }
+}
+
 async function main() {
   const userCount = await prisma.user.count();
   if (userCount > 0) {
+    await ensureDefaultStores();
     console.log(
       `Database already has ${userCount} user(s); skipping seed. ` +
         'Use `prisma migrate reset` to wipe and re-seed.',
@@ -84,11 +102,12 @@ async function main() {
     },
   });
 
-  const mainStore = await prisma.store.create({
-    data: { storeName: 'Main Store', location: 'Ground Floor, HQ' },
+  await ensureDefaultStores();
+  const mainStore = await prisma.store.findUniqueOrThrow({
+    where: { storeName: 'IPS Main Store' },
   });
-  const warehouse = await prisma.store.create({
-    data: { storeName: 'Central Warehouse', location: 'Industrial Area' },
+  const warehouse = await prisma.store.findUniqueOrThrow({
+    where: { storeName: 'Central Warehouse' },
   });
 
   const stationery = await prisma.category.create({ data: { name: 'Stationery' } });
@@ -155,7 +174,7 @@ async function main() {
       vendorId: vendorA.id,
       expectedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
       status: 'COMPLETED',
-      notes: 'Delivered at Main Store receiving bay',
+      notes: 'Delivered at IPS Main Store receiving bay',
       items: {
         create: [
           { itemId: a4Paper.id, orderedQty: 50, receivedQty: 50, unitPrice: 245 },

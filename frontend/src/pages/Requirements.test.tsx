@@ -47,7 +47,7 @@ vi.mock('../lib/api', () => ({
   api: { get: mocks.apiGet, post: mocks.apiPost },
 }))
 
-const store: Store = { id: 1, storeName: 'Main Store', location: null, createdAt: '2026-01-01T00:00:00Z' }
+const store: Store = { id: 1, storeName: 'IPS Main Store', location: null, createdAt: '2026-01-01T00:00:00Z' }
 const user: User = {
   id: 1,
   name: 'Ramesh',
@@ -239,6 +239,19 @@ describe('RequirementsPage', () => {
       remarks: 'Urgent request',
       items: [{ itemId: 1, quantity: 5 }],
     })
+  })
+
+  it('defaults the store to IPS Main Store when creating a requirement', async () => {
+    const userEv = userEvent.setup()
+    mocks.role = 'STORE_KEEPER'
+    mocks.stores = [
+      { id: 2, storeName: 'Central Warehouse', location: null, createdAt: '2026-01-01T00:00:00Z' },
+      { id: 1, storeName: 'IPS Main Store', location: null, createdAt: '2026-01-01T00:00:00Z' },
+    ]
+    renderPage()
+    await userEv.click(screen.getByRole('button', { name: /new requirement/i }))
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByLabelText(/store/i)).toHaveValue('1')
   })
 
   it('approves a requirement in store manager review', async () => {
@@ -450,7 +463,7 @@ describe('RequirementsPage', () => {
     renderPage()
     await userEv.click(screen.getByRole('button', { name: /^view$/i }))
     const dialog = screen.getByRole('dialog')
-    expect(within(dialog).getByText('Main Store')).toBeInTheDocument()
+    expect(within(dialog).getByText('IPS Main Store')).toBeInTheDocument()
     expect(within(dialog).getByText('Ramesh')).toBeInTheDocument()
     expect(within(dialog).getByText('Need urgently')).toBeInTheDocument()
     expect(within(dialog).getByText('Cement')).toBeInTheDocument()
