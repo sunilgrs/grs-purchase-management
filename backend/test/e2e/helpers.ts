@@ -144,8 +144,18 @@ export async function seedTestContext(
     mobile: '9100000002',
     email: 'e2e-manager@test.example',
     password: 'secret123',
-    role: 'MANAGER',
+    role: 'STORE_KEEPER',
   });
+  await prisma.user.update({
+    where: { id: manager.id },
+    data: { role: 'MANAGER' },
+  });
+  const managerLogin = await request(app.getHttpServer())
+    .post('/api/auth/login')
+    .send({ username: 'e2e-manager@test.example', password: 'secret123' })
+    .expect(201);
+  manager.accessToken = managerLogin.body.accessToken;
+  manager.role = 'MANAGER';
   const storeKeeper = await registerUser(app, {
     name: 'E2E Store Keeper',
     mobile: '9100000003',

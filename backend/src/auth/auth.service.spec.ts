@@ -114,10 +114,11 @@ describe('AuthService.register', () => {
     expect(result.accessToken).toBe('signed-token');
   });
 
-  it('honours a non-admin role from the payload', async () => {
-    const { service, createArgs } = makeService(null);
-    await service.register({ ...registerDto, role: 'MANAGER' });
-    expect(createArgs()?.data.role).toBe('MANAGER');
+  it('rejects a MANAGER self-registration', async () => {
+    const { service } = makeService(null);
+    await expect(
+      service.register({ ...registerDto, role: 'MANAGER' }),
+    ).rejects.toThrow(ForbiddenException);
   });
 
   it('rejects a PURCHASER self-registration', async () => {

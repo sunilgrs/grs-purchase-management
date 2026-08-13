@@ -14,16 +14,16 @@ describe('Auth (e2e)', () => {
     await app.close();
   });
 
-  it('registers a user and returns a JWT', async () => {
+  it('registers a store keeper and returns a JWT', async () => {
     const user = await registerUser(app, {
       name: 'Auth Tester',
       mobile: '9199999999',
       email: 'auth-tester@test.example',
       password: 'secret123',
-      role: 'MANAGER',
+      role: 'STORE_KEEPER',
     });
     expect(user.id).toBeGreaterThan(0);
-    expect(user.role).toBe('MANAGER');
+    expect(user.role).toBe('STORE_KEEPER');
     expect(user.accessToken).toBeTruthy();
   });
 
@@ -64,6 +64,19 @@ describe('Auth (e2e)', () => {
         email: 'wannabe@test.example',
         password: 'secret123',
         role: 'ADMIN',
+      });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects self-registration as MANAGER', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/api/auth/register')
+      .send({
+        name: 'Wannabe Manager',
+        mobile: '9199999996',
+        email: 'wannabe-manager@test.example',
+        password: 'secret123',
+        role: 'MANAGER',
       });
     expect(res.status).toBe(400);
   });
@@ -159,8 +172,18 @@ describe('Password reset (e2e)', () => {
       mobile: '9199900003',
       email: 'reset-manager@test.example',
       password: 'secret123',
-      role: 'MANAGER',
+      role: 'STORE_KEEPER',
     });
+    await prisma.user.update({
+      where: { id: manager.id },
+      data: { role: 'MANAGER' },
+    });
+    const managerLogin = await server()
+      .post('/api/auth/login')
+      .send({ username: 'reset-manager@test.example', password: 'secret123' })
+      .expect(201);
+    manager.accessToken = managerLogin.body.accessToken;
+
     const target = await registerUser(app, {
       name: 'Reset Target 2',
       mobile: '9199900004',

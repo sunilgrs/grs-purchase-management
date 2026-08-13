@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
-import { Button, Card, Input, Select } from '../components/ui'
+import { Button, Card, Input } from '../components/ui'
 
 export default function RegisterPage() {
   const { register } = useAuth()
@@ -10,7 +10,6 @@ export default function RegisterPage() {
     name: '',
     mobile: '',
     email: '',
-    role: 'STORE_KEEPER',
     password: '',
     confirm: '',
   })
@@ -34,7 +33,7 @@ export default function RegisterPage() {
         name: form.name,
         mobile: form.mobile,
         email: form.email || undefined,
-        role: form.role,
+        role: 'STORE_KEEPER',
         password: form.password,
       })
       navigate('/', { replace: true })
@@ -120,15 +119,6 @@ export default function RegisterPage() {
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
-              <Select
-                label="Role"
-                required
-                value={form.role}
-                onChange={(e) => setForm({ ...form, role: e.target.value })}
-              >
-                <option value="STORE_KEEPER">STORE_KEEPER</option>
-                <option value="MANAGER">MANAGER</option>
-              </Select>
               <Input
                 label="Password"
                 required
