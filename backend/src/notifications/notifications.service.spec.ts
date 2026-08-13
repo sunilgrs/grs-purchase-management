@@ -4,11 +4,13 @@ import { NotificationsService } from './notifications.service.js';
 function makeService() {
   const prisma = {
     notificationRead: {
-      findUnique: jest.fn(() => null),
-      upsert: jest.fn(),
+      findUnique: jest.fn(
+        (_args: unknown) => null as null | { lastReadAt: Date },
+      ),
+      upsert: jest.fn((_args: unknown) => null),
     },
     requirement: {
-      findMany: jest.fn(() => [
+      findMany: jest.fn((_args: unknown) => [
         {
           id: 3,
           requirementNo: 'REQ-3',
@@ -19,7 +21,7 @@ function makeService() {
       ]),
     },
     purchaseOrder: {
-      findMany: jest.fn(() => [
+      findMany: jest.fn((_args: unknown) => [
         {
           id: 2,
           poNumber: 'PO-2',
@@ -31,7 +33,7 @@ function makeService() {
       ]),
     },
     discrepancy: {
-      findMany: jest.fn(() => [
+      findMany: jest.fn((_args: unknown) => [
         {
           id: 5,
           discrepancyType: 'DAMAGE',

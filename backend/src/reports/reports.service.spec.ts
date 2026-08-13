@@ -4,7 +4,7 @@ import { ReportsService } from './reports.service.js';
 function makeService(rows: unknown[]) {
   const prisma = {
     purchaseOrder: {
-      findMany: jest.fn(() => rows),
+      findMany: jest.fn((_args: unknown) => rows),
     },
   };
   const service = new ReportsService(prisma as never);

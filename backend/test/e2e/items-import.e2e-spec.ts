@@ -15,7 +15,7 @@ describe('Item bulk import (e2e)', () => {
   let ctx: TestContext;
 
   const upload = (
-    file: Buffer | string,
+    file?: Buffer | string,
     name = 'items.xlsx',
     token?: string,
   ) => {

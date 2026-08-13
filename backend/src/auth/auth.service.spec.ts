@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { AuthService } from './auth.service.js';
+import type { RegisterDto } from './dto/register.dto.js';
 
 type UserRecord = {
   id: number;
@@ -80,7 +81,10 @@ describe('AuthService.register', () => {
   it('rejects an ADMIN self-registration', async () => {
     const { service } = makeService(null);
     await expect(
-      service.register({ ...registerDto, role: 'ADMIN' }),
+      service.register({
+        ...registerDto,
+        role: 'ADMIN',
+      } as unknown as RegisterDto),
     ).rejects.toThrow(ForbiddenException);
   });
 
@@ -117,14 +121,20 @@ describe('AuthService.register', () => {
   it('rejects a MANAGER self-registration', async () => {
     const { service } = makeService(null);
     await expect(
-      service.register({ ...registerDto, role: 'MANAGER' }),
+      service.register({
+        ...registerDto,
+        role: 'MANAGER',
+      } as unknown as RegisterDto),
     ).rejects.toThrow(ForbiddenException);
   });
 
   it('rejects a STORE_MANAGER self-registration', async () => {
     const { service } = makeService(null);
     await expect(
-      service.register({ ...registerDto, role: 'STORE_MANAGER' }),
+      service.register({
+        ...registerDto,
+        role: 'STORE_MANAGER',
+      } as unknown as RegisterDto),
     ).rejects.toThrow(ForbiddenException);
   });
 });

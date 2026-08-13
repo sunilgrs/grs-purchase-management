@@ -22,7 +22,9 @@ function makeGuard(options: {
   };
   const prisma = {
     user: {
-      findUnique: jest.fn(() => Promise.resolve({ permissions, role })),
+      findUnique: jest.fn((_args: unknown) =>
+        Promise.resolve({ permissions, role }),
+      ),
     },
   };
   const guard = new FeatureGuard(reflector as never, prisma as never);

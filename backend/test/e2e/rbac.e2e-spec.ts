@@ -25,9 +25,11 @@ describe('RBAC (e2e)', () => {
     body?: unknown,
     token?: string,
   ) => {
-    const r = request(app.getHttpServer())[method](path);
+    const r = request(app.getHttpServer())[
+      method as 'get' | 'post' | 'put' | 'patch' | 'delete'
+    ](path);
     if (token) r.set(auth(token));
-    if (body !== undefined) r.send(body);
+    if (body !== undefined) r.send(body as object);
     return r;
   };
 

@@ -4,7 +4,7 @@ import { DashboardService } from './dashboard.service.js';
 function makeService() {
   const prisma = {
     purchaseOrder: {
-      groupBy: jest.fn(() => [
+      groupBy: jest.fn((_args: unknown) => [
         { status: 'PENDING', _count: { _all: 2 } },
         { status: 'COMPLETED', _count: { _all: 1 } },
       ]),
@@ -70,7 +70,7 @@ describe('DashboardService', () => {
     const label = current.toLocaleString('en', { month: 'short' });
     const currentBucket = res.spendTrend.find((m) => m.month === label);
     expect(currentBucket).toBeDefined();
-    expect(currentBucket.spend).toBe(2000);
+    expect(currentBucket!.spend).toBe(2000);
     expect(res.spendTrend.filter((m) => m.spend === 0).length).toBeGreaterThan(
       0,
     );
