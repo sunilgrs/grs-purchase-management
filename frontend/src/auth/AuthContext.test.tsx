@@ -115,10 +115,11 @@ describe('AuthContext', () => {
       expect(result.current.hasFeature('purchase-orders')).toBe(true)
       expect(result.current.hasFeature('deliveries')).toBe(true)
       expect(result.current.hasFeature('discrepancies')).toBe(true)
-      expect(result.current.hasFeature('vendors')).toBe(false)
+      expect(result.current.hasFeature('vendors')).toBe(true)
+      expect(result.current.hasFeature('audit-logs')).toBe(true)
     })
 
-    it('applies store keeper defaults and gives purchasers nothing', () => {
+    it('applies store keeper defaults and store manager keeps the same set', () => {
       localStorage.setItem(
         'grs_user',
         JSON.stringify({ id: 1, name: 'A', role: 'STORE_KEEPER', permissions: null }),
@@ -130,11 +131,15 @@ describe('AuthContext', () => {
 
       localStorage.setItem(
         'grs_user',
-        JSON.stringify({ id: 1, name: 'A', role: 'PURCHASER', permissions: null }),
+        JSON.stringify({ id: 1, name: 'A', role: 'STORE_MANAGER', permissions: null }),
       )
       const { result: res2 } = renderHook(() => useAuth(), { wrapper })
-      expect(res2.current.hasFeature('dashboard')).toBe(false)
-      expect(res2.current.hasFeature('requirements')).toBe(false)
+      expect(res2.current.hasFeature('dashboard')).toBe(true)
+      expect(res2.current.hasFeature('requirements')).toBe(true)
+      expect(res2.current.hasFeature('deliveries')).toBe(true)
+      expect(res2.current.hasFeature('discrepancies')).toBe(true)
+      expect(res2.current.hasFeature('purchase-orders')).toBe(false)
+      expect(res2.current.hasFeature('vendors')).toBe(false)
     })
 
     it('respects an explicit permission list', () => {

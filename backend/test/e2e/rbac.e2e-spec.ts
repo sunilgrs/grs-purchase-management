@@ -182,6 +182,15 @@ describe('RBAC (e2e)', () => {
         201,
       );
     });
+    it('STORE_MANAGER can create a requirement', async () => {
+      await check(
+        'post',
+        '/api/requirements',
+        requirementBody(),
+        ctx.storeManager.accessToken,
+        201,
+      );
+    });
     it('MANAGER can submit a requirement', async () => {
       const created = await api(
         'post',
@@ -225,6 +234,54 @@ describe('RBAC (e2e)', () => {
         approveBody(),
         ctx.storeKeeper.accessToken,
         403,
+      );
+    });
+    it('STORE_MANAGER can manager-approve', async () => {
+      const created = await api(
+        'post',
+        '/api/requirements',
+        requirementBody(),
+        ctx.storeManager.accessToken,
+      ).expect(201);
+      await api(
+        'post',
+        `/api/requirements/${created.body.id}/submit`,
+        {},
+        ctx.storeManager.accessToken,
+      ).expect(201);
+      await api(
+        'post',
+        `/api/requirements/${created.body.id}/store-manager-review`,
+        { approve: true },
+        ctx.storeManager.accessToken,
+      ).expect(201);
+      await check(
+        'post',
+        `/api/requirements/${created.body.id}/approve`,
+        approveBody(),
+        ctx.storeManager.accessToken,
+        201,
+      );
+    });
+    it('STORE_MANAGER can reject', async () => {
+      const created = await api(
+        'post',
+        '/api/requirements',
+        requirementBody(),
+        ctx.storeManager.accessToken,
+      ).expect(201);
+      await api(
+        'post',
+        `/api/requirements/${created.body.id}/submit`,
+        {},
+        ctx.storeManager.accessToken,
+      ).expect(201);
+      await check(
+        'post',
+        `/api/requirements/${created.body.id}/reject`,
+        { approve: false },
+        ctx.storeManager.accessToken,
+        201,
       );
     });
     it('MANAGER can reject', async () => {
@@ -272,6 +329,24 @@ describe('RBAC (e2e)', () => {
         403,
       );
     });
+    it('STORE_MANAGER cannot mark-whatsapp-sent', async () => {
+      await check(
+        'post',
+        `/api/requirements/${reqId}/mark-whatsapp-sent`,
+        {},
+        ctx.storeManager.accessToken,
+        403,
+      );
+    });
+    it('STORE_MANAGER cannot read whatsapp-message', async () => {
+      await check(
+        'get',
+        `/api/requirements/${reqId}/whatsapp-message`,
+        undefined,
+        ctx.storeManager.accessToken,
+        403,
+      );
+    });
     it('STORE_KEEPER cannot mark-awaiting-delivery', async () => {
       await check(
         'post',
@@ -309,6 +384,48 @@ describe('RBAC (e2e)', () => {
         poBody(),
         ctx.storeKeeper.accessToken,
         403,
+      );
+    });
+    it('STORE_MANAGER cannot create a PO', async () => {
+      await check(
+        'post',
+        '/api/purchase-orders',
+        poBody(),
+        ctx.storeManager.accessToken,
+        403,
+      );
+    });
+    it('STORE_MANAGER can record a delivery', async () => {
+      const created = await api(
+        'post',
+        '/api/requirements',
+        requirementBody(),
+        ctx.storeKeeper.accessToken,
+      ).expect(201);
+      await api(
+        'post',
+        `/api/requirements/${created.body.id}/submit`,
+        {},
+        ctx.storeKeeper.accessToken,
+      ).expect(201);
+      await api(
+        'post',
+        `/api/requirements/${created.body.id}/store-manager-review`,
+        { approve: true },
+        ctx.storeManager.accessToken,
+      ).expect(201);
+      const approve = await api(
+        'post',
+        `/api/requirements/${created.body.id}/approve`,
+        approveBody(),
+        ctx.storeManager.accessToken,
+      ).expect(201);
+      await check(
+        'post',
+        '/api/deliveries',
+        { ...deliveryBody(), poId: approve.body.id },
+        ctx.storeManager.accessToken,
+        201,
       );
     });
     it('MANAGER can record a delivery', async () => {
@@ -353,6 +470,21 @@ describe('RBAC (e2e)', () => {
         201,
       );
     });
+    it('STORE_MANAGER can report a discrepancy', async () => {
+      await check(
+        'post',
+        '/api/discrepancies',
+        {
+          poId,
+          deliveryId,
+          itemId: ctx.itemAId,
+          discrepancyType: 'DAMAGE',
+          quantity: 1,
+        },
+        ctx.storeManager.accessToken,
+        201,
+      );
+    });
     it('STORE_KEEPER can start-review', async () => {
       await check(
         'post',
@@ -380,12 +512,42 @@ describe('RBAC (e2e)', () => {
         201,
       );
     });
+    it('STORE_MANAGER can manager-review', async () => {
+      const dis = await api(
+        'post',
+        '/api/discrepancies',
+        {
+          poId,
+          deliveryId,
+          itemId: ctx.itemAId,
+          discrepancyType: 'DAMAGE',
+          quantity: 1,
+        },
+        ctx.storeManager.accessToken,
+      ).expect(201);
+      await check(
+        'post',
+        `/api/discrepancies/${dis.body.id}/manager-review`,
+        { approve: true },
+        ctx.storeManager.accessToken,
+        201,
+      );
+    });
     it('STORE_KEEPER cannot read discrepancy whatsapp-message', async () => {
       await check(
         'get',
         `/api/discrepancies/${discrepancyId}/whatsapp-message`,
         undefined,
         ctx.storeKeeper.accessToken,
+        403,
+      );
+    });
+    it('STORE_MANAGER cannot read discrepancy whatsapp-message', async () => {
+      await check(
+        'get',
+        `/api/discrepancies/${discrepancyId}/whatsapp-message`,
+        undefined,
+        ctx.storeManager.accessToken,
         403,
       );
     });

@@ -52,11 +52,11 @@ const label = (status: string) => status.replace(/_/g, ' ')
 export default function RequirementsPage() {
   const { user } = useAuth()
   const role = user?.role
-  const canCreate = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
-  const canSubmit = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
-  const canManager = role === 'MANAGER' || role === 'ADMIN'
+  const canCreate = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
+  const canSubmit = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
+  const canManager = role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
   const canWhatsApp = role === 'MANAGER' || role === 'ADMIN'
-  const canVerify = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
+  const canVerify = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
   const { data, loading, error, reload } = useFetch<Requirement[]>('/requirements')
   const { data: stores } = useFetch<Store[]>('/stores')
   const { data: users } = useFetch<User[]>('/users')

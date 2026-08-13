@@ -121,10 +121,10 @@ describe('AuthService.register', () => {
     ).rejects.toThrow(ForbiddenException);
   });
 
-  it('rejects a PURCHASER self-registration', async () => {
+  it('rejects a STORE_MANAGER self-registration', async () => {
     const { service } = makeService(null);
     await expect(
-      service.register({ ...registerDto, role: 'PURCHASER' }),
+      service.register({ ...registerDto, role: 'STORE_MANAGER' }),
     ).rejects.toThrow(ForbiddenException);
   });
 });

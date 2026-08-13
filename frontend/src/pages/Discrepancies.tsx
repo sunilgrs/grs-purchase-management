@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useFocusParam } from '../hooks/useFocus'
 import {
   Badge,
@@ -42,12 +43,12 @@ interface WhatsAppPayload {
 export default function DiscrepanciesPage() {
   const { user } = useAuth()
   const role = user?.role
-  const canReport = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
-  const canStartReview = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
-  const canManager = role === 'MANAGER' || role === 'ADMIN'
+  const canReport = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
+  const canStartReview = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
+  const canManager = role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
   const canWhatsApp = role === 'MANAGER' || role === 'ADMIN'
-  const canTrack = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
-  const canVerifyReplacement = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
+  const canTrack = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
+  const canVerifyReplacement = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
   const { data, loading, error, reload } = useFetch<Discrepancy[]>('/discrepancies')
   const { data: pos } = useFetch<PurchaseOrder[]>('/purchase-orders')
   const { data: deliveries } = useFetch<Delivery[]>('/deliveries')
@@ -67,6 +68,16 @@ export default function DiscrepanciesPage() {
   })
   const { focusId, clearFocus } = useFocusParam()
   const [highlightId, setHighlightId] = useState<number | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    const poId = searchParams.get('poId')
+    const deliveryId = searchParams.get('deliveryId')
+    if (!canReport || !poId || !deliveryId) return
+    setForm((f) => ({ ...f, poId, deliveryId }))
+    setShowCreate(true)
+    setSearchParams({}, { replace: true })
+  }, [canReport, searchParams, setSearchParams])
 
   useEffect(() => {
     if (focusId == null || !data || data.length === 0) return

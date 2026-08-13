@@ -26,7 +26,7 @@ export class DiscrepanciesController {
   constructor(private readonly discrepanciesService: DiscrepanciesService) {}
 
   @Post()
-  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'STORE_MANAGER', 'MANAGER', 'ADMIN')
   create(@Body() createDiscrepancyDto: CreateDiscrepancyDto) {
     return this.discrepanciesService.create(createDiscrepancyDto);
   }
@@ -61,7 +61,7 @@ export class DiscrepanciesController {
   }
 
   @Post(':id/start-review')
-  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'STORE_MANAGER', 'MANAGER', 'ADMIN')
   startReview(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,
@@ -70,7 +70,7 @@ export class DiscrepanciesController {
   }
 
   @Post(':id/manager-review')
-  @Roles('MANAGER', 'ADMIN')
+  @Roles('STORE_MANAGER', 'MANAGER', 'ADMIN')
   managerReview(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: DiscrepancyReviewDto,
@@ -80,7 +80,7 @@ export class DiscrepanciesController {
   }
 
   @Post(':id/await-replacement')
-  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'STORE_MANAGER', 'MANAGER', 'ADMIN')
   awaitReplacement(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,
@@ -89,7 +89,7 @@ export class DiscrepanciesController {
   }
 
   @Post(':id/replacement-received')
-  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'STORE_MANAGER', 'MANAGER', 'ADMIN')
   replacementReceived(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,
@@ -98,7 +98,7 @@ export class DiscrepanciesController {
   }
 
   @Post(':id/verify')
-  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'STORE_MANAGER', 'MANAGER', 'ADMIN')
   verify(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: VerifyDiscrepancyDto,
@@ -108,7 +108,7 @@ export class DiscrepanciesController {
   }
 
   @Post(':id/complete')
-  @Roles('MANAGER', 'ADMIN')
+  @Roles('STORE_MANAGER', 'MANAGER', 'ADMIN')
   complete(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,

@@ -6,6 +6,18 @@ import type { Delivery } from '../types'
 
 const mocks = vi.hoisted(() => ({
   dels: [] as Delivery[],
+  role: 'STORE_KEEPER',
+  navigate: vi.fn(),
+}))
+
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => mocks.navigate,
+}))
+
+vi.mock('../auth/useAuth', () => ({
+  useAuth: () => ({
+    user: { id: 1, name: 'Test User', mobile: '9999999999', email: null, role: mocks.role, status: 'ACTIVE' },
+  }),
 }))
 
 vi.mock('../hooks/useFetch', () => ({
@@ -14,6 +26,12 @@ vi.mock('../hooks/useFetch', () => ({
     loading: false,
     error: null,
     reload: () => {},
+  }),
+  useApiAction: () => ({
+    submitting: false,
+    error: null,
+    clearError: () => {},
+    run: async <T,>(fn: () => Promise<T>) => fn(),
   }),
 }))
 
@@ -109,5 +127,34 @@ describe('DeliveriesPage', () => {
     const dialog = screen.getByRole('dialog')
     expect(within(dialog).getByText(/^delivery —/i)).toBeInTheDocument()
     expect(within(dialog).getByText('—')).toBeInTheDocument()
+  })
+
+  it('shows Record Delivery to store keepers and store managers', () => {
+    mocks.role = 'STORE_KEEPER'
+    renderPage()
+    expect(screen.getByRole('button', { name: /record delivery/i })).toBeInTheDocument()
+
+    mocks.role = 'STORE_MANAGER'
+    cleanup()
+    renderPage()
+    expect(screen.getByRole('button', { name: /record delivery/i })).toBeInTheDocument()
+  })
+
+  it('opens the record delivery modal from Record Delivery', async () => {
+    const user = userEvent.setup()
+    mocks.role = 'STORE_KEEPER'
+    renderPage()
+    await user.click(screen.getByRole('button', { name: /record delivery/i }))
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText('Record Delivery')).toBeInTheDocument()
+    expect(within(dialog).getByLabelText(/purchase order/i)).toBeInTheDocument()
+  })
+
+  it('navigates to discrepancies prefilled from Report Issue', async () => {
+    const user = userEvent.setup()
+    mocks.dels = [makeDelivery({})]
+    renderPage()
+    await user.click(screen.getByRole('button', { name: /report issue/i }))
+    expect(mocks.navigate).toHaveBeenCalledWith('/discrepancies?poId=1&deliveryId=1')
   })
 })

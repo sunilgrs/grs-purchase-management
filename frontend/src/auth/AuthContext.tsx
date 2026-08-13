@@ -7,9 +7,9 @@ const STORE_KEEPER_FEATURES = ['dashboard', 'requirements', 'deliveries', 'discr
 
 const ROLE_DEFAULT_FEATURES: Record<string, string[]> = {
   STORE_KEEPER: STORE_KEEPER_FEATURES,
-  MANAGER: [...STORE_KEEPER_FEATURES, 'purchase-orders'],
+  STORE_MANAGER: [...STORE_KEEPER_FEATURES],
+  MANAGER: ALL_FEATURES.map((f) => f.key),
   ADMIN: ALL_FEATURES.map((f) => f.key),
-  PURCHASER: [],
 }
 
 export interface AuthContextValue {

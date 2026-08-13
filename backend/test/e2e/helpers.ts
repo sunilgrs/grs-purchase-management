@@ -74,6 +74,7 @@ export interface TestContext {
   itemBId: number;
   admin: { id: number; role: string; accessToken: string };
   manager: { id: number; role: string; accessToken: string };
+  storeManager: { id: number; role: string; accessToken: string };
   storeKeeper: { id: number; role: string; accessToken: string };
 }
 
@@ -156,6 +157,26 @@ export async function seedTestContext(
     .expect(201);
   manager.accessToken = managerLogin.body.accessToken;
   manager.role = 'MANAGER';
+  const storeManager = await registerUser(app, {
+    name: 'E2E Store Manager',
+    mobile: '9100000004',
+    email: 'e2e-store-manager@test.example',
+    password: 'secret123',
+    role: 'STORE_KEEPER',
+  });
+  await prisma.user.update({
+    where: { id: storeManager.id },
+    data: { role: 'STORE_MANAGER' },
+  });
+  const storeManagerLogin = await request(app.getHttpServer())
+    .post('/api/auth/login')
+    .send({
+      username: 'e2e-store-manager@test.example',
+      password: 'secret123',
+    })
+    .expect(201);
+  storeManager.accessToken = storeManagerLogin.body.accessToken;
+  storeManager.role = 'STORE_MANAGER';
   const storeKeeper = await registerUser(app, {
     name: 'E2E Store Keeper',
     mobile: '9100000003',
@@ -175,6 +196,7 @@ export async function seedTestContext(
     itemBId: itemB.id,
     admin,
     manager,
+    storeManager,
     storeKeeper,
   };
 }

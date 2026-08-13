@@ -73,6 +73,35 @@ describe('FeatureGuard', () => {
     );
   });
 
+  it('allows a STORE_MANAGER with no explicit permissions on default features', async () => {
+    const { guard, context } = makeGuard({
+      feature: ['deliveries'],
+      permissions: null,
+      role: 'STORE_MANAGER',
+    });
+    await expect(guard.canActivate(context)).resolves.toBe(true);
+  });
+
+  it('rejects a STORE_MANAGER with no explicit permissions on a non-default feature', async () => {
+    const { guard, context } = makeGuard({
+      feature: ['audit-logs'],
+      permissions: null,
+      role: 'STORE_MANAGER',
+    });
+    await expect(guard.canActivate(context)).rejects.toThrow(
+      ForbiddenException,
+    );
+  });
+
+  it('allows a MANAGER with no explicit permissions on every feature', async () => {
+    const { guard, context } = makeGuard({
+      feature: ['audit-logs'],
+      permissions: null,
+      role: 'MANAGER',
+    });
+    await expect(guard.canActivate(context)).resolves.toBe(true);
+  });
+
   it('allows a MANAGER with no explicit permissions on default features', async () => {
     const { guard, context } = makeGuard({
       feature: ['purchase-orders'],
@@ -80,27 +109,6 @@ describe('FeatureGuard', () => {
       role: 'MANAGER',
     });
     await expect(guard.canActivate(context)).resolves.toBe(true);
-  });
-
-  it('rejects a MANAGER with no explicit permissions on a non-default feature', async () => {
-    const { guard, context } = makeGuard({
-      feature: ['audit-logs'],
-      permissions: null,
-      role: 'MANAGER',
-    });
-    await expect(guard.canActivate(context)).rejects.toThrow(
-      ForbiddenException,
-    );
-  });
-
-  it('rejects a PURCHASER with no explicit permissions on any feature', async () => {
-    const { guard, context } = makeGuard({
-      permissions: null,
-      role: 'PURCHASER',
-    });
-    await expect(guard.canActivate(context)).rejects.toThrow(
-      ForbiddenException,
-    );
   });
 
   it('allows a user whose permissions include the feature', async () => {

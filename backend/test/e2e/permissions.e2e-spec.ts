@@ -96,18 +96,18 @@ describe('Feature permissions (e2e)', () => {
 
   it('resets to defaults (null) to restore role-default access', async () => {
     await request(app.getHttpServer())
-      .patch(`/api/users/${ctx.manager.id}/permissions`)
+      .patch(`/api/users/${ctx.storeKeeper.id}/permissions`)
       .set(auth(ctx.admin.accessToken))
       .send({ permissions: null })
       .expect(200);
 
     await request(app.getHttpServer())
       .get('/api/dashboard/summary')
-      .set(auth(ctx.manager.accessToken))
+      .set(auth(ctx.storeKeeper.accessToken))
       .expect(200);
     await request(app.getHttpServer())
       .get('/api/audit-logs')
-      .set(auth(ctx.manager.accessToken))
+      .set(auth(ctx.storeKeeper.accessToken))
       .expect(403);
   });
 

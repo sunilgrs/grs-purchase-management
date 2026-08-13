@@ -130,8 +130,13 @@ describe('RequirementsPage', () => {
     cleanup()
   })
 
-  it('shows New Requirement to store keepers, managers and admins', () => {
+  it('shows New Requirement to store keepers, store managers, managers and admins', () => {
     mocks.role = 'STORE_KEEPER'
+    renderPage()
+    expect(screen.getByRole('button', { name: /new requirement/i })).toBeInTheDocument()
+
+    mocks.role = 'STORE_MANAGER'
+    cleanup()
     renderPage()
     expect(screen.getByRole('button', { name: /new requirement/i })).toBeInTheDocument()
 
@@ -139,12 +144,6 @@ describe('RequirementsPage', () => {
     cleanup()
     renderPage()
     expect(screen.getByRole('button', { name: /new requirement/i })).toBeInTheDocument()
-  })
-
-  it('hides New Requirement from purchasers', () => {
-    mocks.role = 'PURCHASER'
-    renderPage()
-    expect(screen.queryByRole('button', { name: /new requirement/i })).not.toBeInTheDocument()
   })
 
   it('lets store keeper submit a DRAFT requirement', async () => {

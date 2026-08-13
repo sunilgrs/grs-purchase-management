@@ -189,6 +189,7 @@ function UsersPage() {
         options: [
           { value: 'ADMIN', label: 'ADMIN' },
           { value: 'STORE_KEEPER', label: 'STORE_KEEPER' },
+          { value: 'STORE_MANAGER', label: 'STORE_MANAGER' },
           { value: 'MANAGER', label: 'MANAGER' },
         ],
       },

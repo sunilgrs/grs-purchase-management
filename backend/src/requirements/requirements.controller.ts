@@ -27,7 +27,7 @@ export class RequirementsController {
   constructor(private readonly requirementsService: RequirementsService) {}
 
   @Post()
-  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'STORE_MANAGER', 'MANAGER', 'ADMIN')
   create(@Body() createRequirementDto: CreateRequirementDto) {
     return this.requirementsService.create(createRequirementDto);
   }
@@ -56,13 +56,13 @@ export class RequirementsController {
   }
 
   @Post(':id/submit')
-  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'STORE_MANAGER', 'MANAGER', 'ADMIN')
   submit(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: AuthUser) {
     return this.requirementsService.submit(id, user.id);
   }
 
   @Post(':id/store-manager-review')
-  @Roles('MANAGER', 'ADMIN')
+  @Roles('STORE_MANAGER', 'MANAGER', 'ADMIN')
   storeManagerReview(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: ReviewRequirementDto,
@@ -72,7 +72,7 @@ export class RequirementsController {
   }
 
   @Post(':id/approve')
-  @Roles('MANAGER', 'ADMIN')
+  @Roles('STORE_MANAGER', 'MANAGER', 'ADMIN')
   managerApprove(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: AssignVendorDto,
@@ -82,7 +82,7 @@ export class RequirementsController {
   }
 
   @Post(':id/reject')
-  @Roles('MANAGER', 'ADMIN')
+  @Roles('STORE_MANAGER', 'MANAGER', 'ADMIN')
   managerReject(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: ReviewRequirementDto,
@@ -110,7 +110,7 @@ export class RequirementsController {
   }
 
   @Post(':id/start-verification')
-  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'STORE_MANAGER', 'MANAGER', 'ADMIN')
   startVerification(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,
@@ -119,7 +119,7 @@ export class RequirementsController {
   }
 
   @Post(':id/verify')
-  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'STORE_MANAGER', 'MANAGER', 'ADMIN')
   verify(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: VerifyRequirementDto,

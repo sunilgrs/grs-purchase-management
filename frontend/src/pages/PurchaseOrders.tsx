@@ -27,7 +27,7 @@ export default function PurchaseOrdersPage() {
   const { user } = useAuth()
   const role = user?.role
   const canManagePo = role === 'MANAGER' || role === 'ADMIN'
-  const canDeliver = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
+  const canDeliver = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
   const { data, loading, error, reload } = useFetch<PurchaseOrder[]>('/purchase-orders')
   const { data: requirements } = useFetch<Requirement[]>('/requirements')
   const { data: vendors } = useFetch<Vendor[]>('/vendors')

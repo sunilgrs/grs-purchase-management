@@ -237,7 +237,7 @@ describe('ItemsPage', () => {
     await renderAsync(<ItemsPage />)
     expect(screen.queryByRole('button', { name: /import excel/i })).not.toBeInTheDocument()
 
-    mocks.role = 'PURCHASER'
+    mocks.role = 'STORE_MANAGER'
     cleanup()
     await renderAsync(<ItemsPage />)
     expect(screen.queryByRole('button', { name: /import excel/i })).not.toBeInTheDocument()

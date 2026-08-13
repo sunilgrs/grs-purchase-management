@@ -7,13 +7,13 @@ const STORE_KEEPER_FEATURES = [
   'discrepancies',
 ];
 
-const MANAGER_FEATURES = [...STORE_KEEPER_FEATURES, 'purchase-orders'];
+const ALL_FEATURES = [...FEATURES];
 
 export const ROLE_DEFAULT_FEATURES: Record<string, string[]> = {
   STORE_KEEPER: STORE_KEEPER_FEATURES,
-  MANAGER: MANAGER_FEATURES,
-  ADMIN: [...FEATURES],
-  PURCHASER: [],
+  STORE_MANAGER: [...STORE_KEEPER_FEATURES],
+  MANAGER: ALL_FEATURES,
+  ADMIN: ALL_FEATURES,
 };
 
 export function roleDefaultFeatures(role: string | null | undefined): string[] {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 
-const APPROVAL_ROLES = new Set(['MANAGER', 'ADMIN']);
+const APPROVAL_ROLES = new Set(['STORE_MANAGER', 'MANAGER', 'ADMIN']);
 
 @Injectable()
 export class NotificationsService {
