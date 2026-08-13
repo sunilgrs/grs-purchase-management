@@ -194,11 +194,12 @@ describe('DiscrepanciesPage', () => {
     expect(screen.queryByRole('button', { name: /whatsapp/i })).not.toBeInTheDocument()
   })
 
-  it('shows Manager Review to store manager for ISSUE_RAISED', () => {
+  it('hides final Manager Review from store manager for ISSUE_RAISED but keeps Start Review', () => {
     mocks.role = 'STORE_MANAGER'
     mocks.dis = [makeDis({})]
     renderPage()
-    expect(screen.getByRole('button', { name: /manager review/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /start review/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /manager review/i })).not.toBeInTheDocument()
   })
 
   it('shows Replacement Received to store keeper for REPLACEMENT_AWAITED', () => {

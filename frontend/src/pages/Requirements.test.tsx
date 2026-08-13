@@ -174,6 +174,15 @@ describe('RequirementsPage', () => {
     expect(screen.getByRole('button', { name: /reject/i })).toBeInTheDocument()
   })
 
+  it('hides final Manager Review from store manager but keeps Store Manager Review', () => {
+    mocks.role = 'STORE_MANAGER'
+    mocks.reqs = [makeReq({ status: 'SUBMITTED' }), makeReq({ id: 2, status: 'PENDING_MANAGER_APPROVAL' })]
+    renderPage()
+    expect(screen.getByRole('button', { name: 'Store Manager Review' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Manager Review' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /reject/i })).not.toBeInTheDocument()
+  })
+
   it('shows WhatsApp and Awaiting Delivery to manager for VENDOR_ASSIGNED', () => {
     mocks.role = 'MANAGER'
     mocks.reqs = [makeReq({ status: 'VENDOR_ASSIGNED' })]

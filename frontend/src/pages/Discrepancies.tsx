@@ -46,6 +46,7 @@ export default function DiscrepanciesPage() {
   const canReport = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
   const canStartReview = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
   const canManager = role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
+  const canFinalManager = role === 'MANAGER' || role === 'ADMIN'
   const canWhatsApp = role === 'MANAGER' || role === 'ADMIN'
   const canTrack = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
   const canVerifyReplacement = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
@@ -185,7 +186,7 @@ export default function DiscrepanciesPage() {
                         Start Review
                       </Button>
                     ) : null}
-                    {canManager && (d.status === 'ISSUE_RAISED' || d.status === 'MANAGER_REVIEW') ? (
+                    {canFinalManager && (d.status === 'ISSUE_RAISED' || d.status === 'MANAGER_REVIEW') ? (
                       <Button size="sm" onClick={() => setReviewDis(d)}>
                         Manager Review
                       </Button>

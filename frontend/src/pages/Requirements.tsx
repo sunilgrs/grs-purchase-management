@@ -68,6 +68,7 @@ export default function RequirementsPage() {
   const canCreate = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
   const canSubmit = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
   const canManager = role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
+  const canFinalManager = role === 'MANAGER' || role === 'ADMIN'
   const canWhatsApp = role === 'MANAGER' || role === 'ADMIN'
   const canVerify = role === 'STORE_KEEPER' || role === 'STORE_MANAGER' || role === 'MANAGER' || role === 'ADMIN'
   const canEdit = (r: Requirement) =>
@@ -236,7 +237,7 @@ export default function RequirementsPage() {
                         Store Manager Review
                       </Button>
                     ) : null}
-                    {canManager && r.status === 'PENDING_MANAGER_APPROVAL' ? (
+                    {canFinalManager && r.status === 'PENDING_MANAGER_APPROVAL' ? (
                       <>
                         <Button size="sm" onClick={() => openApprove(r)}>
                           Manager Review
