@@ -276,6 +276,19 @@ describe('PurchaseOrdersPage', () => {
     })
   })
 
+  it('hides inactive users from the Received By dropdown', async () => {
+    const userEv = userEvent.setup()
+    mocks.role = 'STORE_KEEPER'
+    mocks.pos = [makePo({})]
+    mocks.users = [user, { ...user, id: 2, name: 'Left The Org', status: 'INACTIVE' }]
+    renderPage()
+    await userEv.click(screen.getByRole('button', { name: /deliver/i }))
+    const dialog = screen.getByRole('dialog')
+    const receivedBy = within(dialog).getByLabelText(/received by/i)
+    expect(within(receivedBy).getByRole('option', { name: 'Ramesh' })).toBeInTheDocument()
+    expect(within(receivedBy).queryByRole('option', { name: 'Left The Org' })).not.toBeInTheDocument()
+  })
+
   it('opens the PO detail with line totals from View', async () => {
     const userEv = userEvent.setup()
     mocks.role = 'MANAGER'

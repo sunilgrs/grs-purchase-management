@@ -227,6 +227,21 @@ describe('RequirementsPage', () => {
     expect(screen.getByText(/create requirement/i)).toBeInTheDocument()
   })
 
+  it('hides inactive users from the Requested By dropdown', async () => {
+    const userEv = userEvent.setup()
+    mocks.role = 'STORE_KEEPER'
+    mocks.users = [
+      user,
+      { ...user, id: 2, name: 'Left The Org', status: 'INACTIVE' },
+    ]
+    renderPage()
+    await userEv.click(screen.getByRole('button', { name: /new requirement/i }))
+    const dialog = screen.getByRole('dialog')
+    const requestedBy = within(dialog).getByLabelText(/requested by/i)
+    expect(within(requestedBy).getByRole('option', { name: 'Ramesh' })).toBeInTheDocument()
+    expect(within(requestedBy).queryByRole('option', { name: 'Left The Org' })).not.toBeInTheDocument()
+  })
+
   it('creates a requirement with line items', async () => {
     const userEv = userEvent.setup()
     mocks.role = 'STORE_KEEPER'

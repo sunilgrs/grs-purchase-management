@@ -46,11 +46,13 @@ export function ItemLineEditor({
               <div className="flex-1">
                 <Select value={line.itemId} onChange={(e) => update(line.key, { itemId: e.target.value })}>
                   <option value="">— Select item —</option>
-                  {items.map((it) => (
-                    <option key={it.id} value={String(it.id)}>
-                      {it.itemName} ({it.itemCode})
-                    </option>
-                  ))}
+                  {items
+                    .filter((it) => it.active)
+                    .map((it) => (
+                      <option key={it.id} value={String(it.id)}>
+                        {it.itemName} ({it.itemCode})
+                      </option>
+                    ))}
                 </Select>
               </div>
               <div className="w-28">

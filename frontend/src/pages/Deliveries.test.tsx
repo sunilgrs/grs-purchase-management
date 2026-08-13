@@ -2,10 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import DeliveriesPage from './Deliveries'
-import type { Delivery } from '../types'
+import type { Delivery, User } from '../types'
 
 const mocks = vi.hoisted(() => ({
   dels: [] as Delivery[],
+  users: [] as User[],
   role: 'STORE_KEEPER',
   navigate: vi.fn(),
 }))
@@ -22,7 +23,7 @@ vi.mock('../auth/useAuth', () => ({
 
 vi.mock('../hooks/useFetch', () => ({
   useFetch: (path: string) => ({
-    data: path === '/deliveries' ? mocks.dels : [],
+    data: path === '/deliveries' ? mocks.dels : path === '/users' ? mocks.users : [],
     loading: false,
     error: null,
     reload: () => {},
@@ -65,6 +66,7 @@ const renderPage = () => render(<DeliveriesPage />)
 describe('DeliveriesPage', () => {
   beforeEach(() => {
     mocks.dels = []
+    mocks.users = []
   })
 
   afterEach(() => {
@@ -148,6 +150,41 @@ describe('DeliveriesPage', () => {
     const dialog = screen.getByRole('dialog')
     expect(within(dialog).getByText('Record Delivery')).toBeInTheDocument()
     expect(within(dialog).getByLabelText(/purchase order/i)).toBeInTheDocument()
+  })
+
+  it('hides inactive users from the Received By dropdown', async () => {
+    const user = userEvent.setup()
+    mocks.role = 'STORE_KEEPER'
+    mocks.users = [
+      {
+        id: 1,
+        name: 'Ramesh',
+        mobile: '9999999999',
+        email: null,
+        role: 'STORE_KEEPER',
+        status: 'ACTIVE',
+        permissions: null,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+      {
+        id: 2,
+        name: 'Left The Org',
+        mobile: '8888888888',
+        email: null,
+        role: 'STORE_KEEPER',
+        status: 'INACTIVE',
+        permissions: null,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    ]
+    renderPage()
+    await user.click(screen.getByRole('button', { name: /record delivery/i }))
+    const dialog = screen.getByRole('dialog')
+    const receivedBy = within(dialog).getByLabelText(/received by/i)
+    expect(within(receivedBy).getByRole('option', { name: 'Ramesh' })).toBeInTheDocument()
+    expect(within(receivedBy).queryByRole('option', { name: 'Left The Org' })).not.toBeInTheDocument()
   })
 
   it('navigates to discrepancies prefilled from Report Issue', async () => {

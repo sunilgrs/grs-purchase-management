@@ -305,9 +305,11 @@ export default function RequirementsPage() {
             </Select>
             <Select label="Requested By" required value={form.requestedById} onChange={(e) => setForm({ ...form, requestedById: e.target.value })}>
               <option value="">— Select —</option>
-              {users?.map((u) => (
-                <option key={u.id} value={String(u.id)}>{u.name}</option>
-              ))}
+              {users
+                ?.filter((u) => u.status === 'ACTIVE')
+                .map((u) => (
+                  <option key={u.id} value={String(u.id)}>{u.name}</option>
+                ))}
             </Select>
             <Input
               label="Required Date"

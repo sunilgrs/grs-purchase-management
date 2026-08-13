@@ -287,9 +287,11 @@ export default function PurchaseOrdersPage() {
           <div className="grid grid-cols-3 gap-4">
             <Select label="Received By" required value={deliverForm.receivedById} onChange={(e) => setDeliverForm({ ...deliverForm, receivedById: e.target.value })}>
               <option value="">— Select —</option>
-              {users?.map((u) => (
-                <option key={u.id} value={String(u.id)}>{u.name}</option>
-              ))}
+              {users
+                ?.filter((u) => u.status === 'ACTIVE')
+                .map((u) => (
+                  <option key={u.id} value={String(u.id)}>{u.name}</option>
+                ))}
             </Select>
             <Input label="Delivery Date" type="date" required value={deliverForm.deliveryDate} onChange={(e) => setDeliverForm({ ...deliverForm, deliveryDate: e.target.value })} />
             <Select label="Status" required value={deliverForm.status} onChange={(e) => setDeliverForm({ ...deliverForm, status: e.target.value })}>

@@ -72,6 +72,13 @@ describe('ItemLineEditor', () => {
     expect(screen.getByDisplayValue('10')).toBeInTheDocument()
   })
 
+  it('hides inactive items from the dropdown', () => {
+    const inactive = { ...items[0], id: 3, itemCode: 'ITM-3', itemName: 'Retired', active: false }
+    renderEditor({ items: [...items, inactive], lines: [newLine()] })
+    expect(screen.getByRole('option', { name: 'Cement (ITM-1)' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Retired (ITM-3)' })).not.toBeInTheDocument()
+  })
+
   it('updates a line when the item selection changes', async () => {
     const user = userEvent.setup()
     const lines = [newLine({ itemId: '1', quantity: '10' })]
