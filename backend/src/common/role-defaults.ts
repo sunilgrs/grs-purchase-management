@@ -16,8 +16,6 @@ export const ROLE_DEFAULT_FEATURES: Record<string, string[]> = {
   PURCHASER: [],
 };
 
-export function roleDefaultFeatures(
-  role: string | null | undefined,
-): string[] {
+export function roleDefaultFeatures(role: string | null | undefined): string[] {
   return ROLE_DEFAULT_FEATURES[role ?? ''] ?? [];
 }
