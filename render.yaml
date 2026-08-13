@@ -51,7 +51,4 @@ services:
       - key: NODE_VERSION
         value: "24"
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: grs-purchase-backend
-          property: host
+        value: https://grs-purchase-backend.onrender.com
