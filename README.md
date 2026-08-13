@@ -17,7 +17,7 @@ Requirement → Approval → PO → WhatsApp → Delivery → Verification → C
 - **Requirement statuses**: `DRAFT → SUBMITTED → PENDING_MANAGER_APPROVAL → VENDOR_ASSIGNED → WHATSAPP_SENT → AWAITING_DELIVERY → MATERIAL_RECEIVED → VERIFICATION_PENDING → COMPLETED`, plus `REJECTED`.
 - **Discrepancy statuses**: `ISSUE_RAISED → MANAGER_REVIEW → VENDOR_NOTIFIED → REPLACEMENT_AWAITED → REPLACEMENT_RECEIVED → VERIFIED → COMPLETED`, plus `REJECTED`.
 - **Auto-raised issues**: recording a delivery with `DAMAGED`, `SHORTAGE`, or `MISMATCH` line conditions automatically raises a discrepancy (`DAMAGE`, `SHORTAGE`, or `WRONG_ITEM`) for that line. Issues can also be raised manually.
-- **Roles**: `ADMIN`, `MANAGER`, `STORE_KEEPER`, `PURCHASER` — endpoint-level enforcement on the backend, with matching UI gating on the frontend.
+- **Roles**: `ADMIN`, `MANAGER`, `STORE_MANAGER`, `STORE_KEEPER` — endpoint-level enforcement on the backend, with matching UI gating on the frontend. `STORE_KEEPER` creates requirements, records deliveries, and raises discrepancies; `STORE_MANAGER` additionally reviews/approves requirements and discrepancies; `MANAGER` and `ADMIN` see every tab and run purchase-order and WhatsApp actions.
 
 ## Quickstart
 
@@ -170,8 +170,9 @@ page header to browse every record, including deactivated ones.
 Admins can control which tabs each user can open from the **Settings** tab
 (Administration section in the sidebar).
 
-- When no permissions are set (`permissions = null`) a user gets the role defaults,
-  i.e. every tab (existing behaviour).
+- When no permissions are set (`permissions = null`) a user gets the role defaults:
+  `STORE_KEEPER` and `STORE_MANAGER` see Dashboard, Requirements, Deliveries, and
+  Discrepancies; `MANAGER` and `ADMIN` can open every tab.
 - When permissions are set, the user can only see and use the granted tabs. Both the
   sidebar and the API enforce this: a `FeatureGuard` checks the request against the
   user's stored permissions on every call, so changes apply immediately without a
@@ -185,24 +186,24 @@ Admins can control which tabs each user can open from the **Settings** tab
 
 ## Demo accounts
 
-| Role        | Email                 | Password   |
-| ----------- | --------------------- | ---------- |
-| Admin       | admin@grs.example     | admin123   |
-| Manager     | manager@grs.example   | manager123 |
-| Store keeper| ramesh@grs.example    | staff123   |
-| Purchaser   | priya@grs.example     | staff123   |
+| Role          | Email                 | Password   |
+| ------------- | --------------------- | ---------- |
+| Admin         | admin@grs.example     | admin123   |
+| Manager       | manager@grs.example   | manager123 |
+| Store manager | priya@grs.example     | staff123   |
+| Store keeper  | ramesh@grs.example    | staff123   |
 
 ## Testing
 
 ```bash
-# Backend — unit (40) + e2e (65) tests
+# Backend — unit (76) + e2e (81) tests
 cd backend
 npm run test
 npm run test:e2e
 npm run lint
 npm run build
 
-# Frontend — unit/component tests (201 tests) with coverage
+# Frontend — unit/component tests (249 tests) with coverage
 cd frontend
 npm run test
 npm run test:coverage

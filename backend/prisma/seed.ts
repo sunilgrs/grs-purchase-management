@@ -65,13 +65,13 @@ async function main() {
       role: 'STORE_KEEPER',
     },
   });
-  const storeKeeper2 = await prisma.user.create({
+  const storeManager = await prisma.user.create({
     data: {
       name: 'Priya Sharma',
       mobile: '9000000003',
       email: 'priya@grs.example',
       password: staffPassword,
-      role: 'STORE_KEEPER',
+      role: 'STORE_MANAGER',
     },
   });
   const manager = await prisma.user.create({
@@ -369,10 +369,10 @@ async function main() {
 
   console.log('Seed complete.');
   console.log('  Users:');
-  console.log(`    Admin:   admin@grs.example / admin123`);
-  console.log(`    Manager: manager@grs.example / manager123`);
-  console.log(`    Store:   ramesh@grs.example / staff123`);
-  console.log(`    Store2:  priya@grs.example / staff123`);
+  console.log(`    Admin:       admin@grs.example / admin123`);
+  console.log(`    Manager:     manager@grs.example / manager123`);
+  console.log(`    StoreMgr:    priya@grs.example / staff123`);
+  console.log(`    StoreKeeper: ramesh@grs.example / staff123`);
   console.log(`  Requirements: ${completedReq.requirementNo} (COMPLETED), ${awaitingReq.requirementNo} (AWAITING_DELIVERY), ${receivedReq.requirementNo} (MATERIAL_RECEIVED), plus DRAFT/SUBMITTED/REJECTED.`);
 }
 
