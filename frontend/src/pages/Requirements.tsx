@@ -349,6 +349,7 @@ export default function RequirementsPage() {
       <StoreManagerReviewModal
         requirement={reviewReq}
         busy={action.submitting}
+        error={action.error}
         onClose={() => setReviewReq(null)}
         onReview={(approve, remarks) =>
           runAction(() =>
@@ -372,6 +373,7 @@ export default function RequirementsPage() {
       <ManagerRejectModal
         requirement={rejectReq}
         busy={action.submitting}
+        error={action.error}
         onClose={() => setRejectReq(null)}
         onReject={(remarks) =>
           runAction(() => api.post(`/requirements/${rejectReq!.id}/reject`, { approve: false, remarks }), () => setRejectReq(null))
@@ -419,11 +421,13 @@ export default function RequirementsPage() {
 function StoreManagerReviewModal({
   requirement,
   busy,
+  error,
   onClose,
   onReview,
 }: {
   requirement: Requirement | null
   busy: boolean
+  error: string | null
   onClose: () => void
   onReview: (approve: boolean, remarks: string) => void
 }) {
@@ -446,6 +450,7 @@ function StoreManagerReviewModal({
               className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
+          {error && <div className="text-sm text-red-600">{error}</div>}
           <div className="flex items-center justify-end gap-2">
             <Button variant="secondary" onClick={onClose} disabled={busy}>Cancel</Button>
             <Button variant="danger" disabled={busy} onClick={() => onReview(false, remarks)}>
@@ -464,11 +469,13 @@ function StoreManagerReviewModal({
 function ManagerRejectModal({
   requirement,
   busy,
+  error,
   onClose,
   onReject,
 }: {
   requirement: Requirement | null
   busy: boolean
+  error: string | null
   onClose: () => void
   onReject: (remarks: string) => void
 }) {
@@ -490,6 +497,7 @@ function ManagerRejectModal({
               className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
+          {error && <div className="text-sm text-red-600">{error}</div>}
           <div className="flex items-center justify-end gap-2">
             <Button variant="secondary" onClick={onClose} disabled={busy}>Cancel</Button>
             <Button variant="danger" disabled={busy || !remarks.trim()} onClick={() => onReject(remarks)}>

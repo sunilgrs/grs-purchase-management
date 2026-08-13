@@ -40,7 +40,13 @@ vi.mock('../hooks/useFetch', () => ({
     submitting: false,
     error: null,
     clearError: () => {},
-    run: async <T,>(fn: () => Promise<T>) => fn(),
+    run: async <T,>(fn: () => Promise<T>) => {
+      try {
+        return await fn()
+      } catch {
+        return undefined
+      }
+    },
   }),
 }))
 
@@ -336,6 +342,19 @@ describe('RequirementsPage', () => {
     const dialog = screen.getByRole('dialog')
     await userEv.click(within(dialog).getByRole('button', { name: /^reject$/i }))
     expect(mocks.apiPost).toHaveBeenCalledWith('/requirements/1/store-manager-review', { approve: false, remarks: '' })
+  })
+
+  it('keeps the store manager review modal open when the review fails', async () => {
+    const userEv = userEvent.setup()
+    mocks.role = 'STORE_MANAGER'
+    mocks.reqs = [makeReq({ status: 'SUBMITTED' })]
+    mocks.apiPost.mockRejectedValue(new Error('Requirement is not in a reviewable state'))
+    renderPage()
+    await userEv.click(screen.getByRole('button', { name: /store manager review/i }))
+    const dialog = screen.getByRole('dialog')
+    await userEv.click(within(dialog).getByRole('button', { name: /^approve$/i }))
+    expect(mocks.apiPost).toHaveBeenCalledWith('/requirements/1/store-manager-review', { approve: true, remarks: '' })
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
   it('approves and assigns a vendor from manager review', async () => {

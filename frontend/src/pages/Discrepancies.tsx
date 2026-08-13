@@ -321,6 +321,7 @@ export default function DiscrepanciesPage() {
       <DiscrepancyReviewModal
         discrepancy={reviewDis}
         busy={action.submitting}
+        error={action.error}
         onClose={() => setReviewDis(null)}
         onReview={(approve, remarks) =>
           runAction(() => api.post(`/discrepancies/${reviewDis!.id}/manager-review`, { approve, remarks }), () => setReviewDis(null))
@@ -349,11 +350,13 @@ export default function DiscrepanciesPage() {
 function DiscrepancyReviewModal({
   discrepancy,
   busy,
+  error,
   onClose,
   onReview,
 }: {
   discrepancy: Discrepancy | null
   busy: boolean
+  error: string | null
   onClose: () => void
   onReview: (approve: boolean, remarks: string) => void
 }) {
@@ -376,6 +379,7 @@ function DiscrepancyReviewModal({
               className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
+          {error && <div className="text-sm text-red-600">{error}</div>}
           <div className="flex items-center justify-end gap-2">
             <Button variant="secondary" onClick={onClose} disabled={busy}>Cancel</Button>
             <Button variant="danger" disabled={busy} onClick={() => onReview(false, remarks)}>

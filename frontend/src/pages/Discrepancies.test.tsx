@@ -35,7 +35,13 @@ vi.mock('../hooks/useFetch', () => ({
     submitting: false,
     error: null,
     clearError: () => {},
-    run: async <T,>(fn: () => Promise<T>) => fn(),
+    run: async <T,>(fn: () => Promise<T>) => {
+      try {
+        return await fn()
+      } catch {
+        return undefined
+      }
+    },
   }),
 }))
 
