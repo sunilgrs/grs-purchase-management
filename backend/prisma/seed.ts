@@ -21,7 +21,6 @@ const seq = (prefix: string, n: number) => `${prefix}-${datePart(new Date())}-${
 
 const DEFAULT_STORES = [
   { storeName: 'IPS Main Store', location: 'Ground Floor, HQ' },
-  { storeName: 'Central Warehouse', location: 'Industrial Area' },
 ];
 
 async function ensureDefaultStores() {
@@ -105,9 +104,6 @@ async function main() {
   await ensureDefaultStores();
   const mainStore = await prisma.store.findUniqueOrThrow({
     where: { storeName: 'IPS Main Store' },
-  });
-  const warehouse = await prisma.store.findUniqueOrThrow({
-    where: { storeName: 'Central Warehouse' },
   });
 
   const stationery = await prisma.category.create({ data: { name: 'Stationery' } });
@@ -216,7 +212,7 @@ async function main() {
   const awaitingReq = await prisma.requirement.create({
     data: {
       requirementNo: seq('REQ', 2),
-      storeId: warehouse.id,
+      storeId: mainStore.id,
       requestedById: storeKeeper.id,
       requiredDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
       priority: 'HIGH',
@@ -239,7 +235,7 @@ async function main() {
       vendorId: vendorB.id,
       expectedDate: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
       status: 'PENDING',
-      notes: 'Ship to Central Warehouse loading dock',
+      notes: 'Ship to IPS Main Store loading dock',
       items: {
         create: [
           { itemId: gloves.id, orderedQty: 100, unitPrice: 320 },
@@ -285,7 +281,7 @@ async function main() {
   await prisma.requirement.create({
     data: {
       requirementNo: seq('REQ', 5),
-      storeId: warehouse.id,
+      storeId: mainStore.id,
       requestedById: storeKeeper.id,
       requiredDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
       priority: 'LOW',
@@ -301,7 +297,7 @@ async function main() {
   const receivedReq = await prisma.requirement.create({
     data: {
       requirementNo: seq('REQ', 6),
-      storeId: warehouse.id,
+      storeId: mainStore.id,
       requestedById: storeKeeper.id,
       requiredDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
       priority: 'NORMAL',
