@@ -23,7 +23,7 @@ export class AuthService {
   async register(dto: RegisterDto) {
     if (dto.role && !PUBLIC_REGISTER_ROLES.includes(dto.role)) {
       throw new ForbiddenException(
-        'You can only self-register as STORE_KEEPER, MANAGER or PURCHASER',
+        'You can only self-register as STORE_KEEPER or MANAGER',
       );
     }
 

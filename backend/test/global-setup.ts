@@ -1,20 +1,15 @@
 import { execSync } from 'node:child_process';
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const testDb = path.resolve(here, 'test-e2e.db').replace(/\\/g, '/');
-const dbFile = path.resolve(here, 'test-e2e.db');
+const TEST_DB_URL =
+  'postgresql://grs_user:grs_dev_password@localhost:5432/grs_test';
 
 export default function globalSetup(): void {
-  if (fs.existsSync(dbFile)) fs.rmSync(dbFile);
-  execSync('npx prisma db push --accept-data-loss', {
-    cwd: path.resolve(here, '..'),
+  execSync('npx prisma db push --accept-data-loss --force-reset', {
+    cwd: process.cwd(),
     stdio: 'inherit',
     env: {
       ...process.env,
-      DATABASE_URL: `file:${testDb}`,
+      DATABASE_URL: TEST_DB_URL,
       PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION:
         'Consent: use db push on test DB (Recommended)',
     },

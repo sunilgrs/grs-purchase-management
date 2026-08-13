@@ -179,11 +179,11 @@ describe('PurchaseOrdersPage', () => {
     expect(screen.getByRole('button', { name: /deliver/i })).toBeInTheDocument()
   })
 
-  it('hides Deliver from manager', () => {
+  it('shows Deliver to manager for an open PO', () => {
     mocks.role = 'MANAGER'
     mocks.pos = [makePo({})]
     renderPage()
-    expect(screen.queryByRole('button', { name: /deliver/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /deliver/i })).toBeInTheDocument()
   })
 
   it('hides Deliver for a COMPLETED PO', () => {

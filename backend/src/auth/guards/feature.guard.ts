@@ -8,6 +8,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { roleDefaultFeatures } from '../../common/role-defaults.js';
 import { FEATURE_KEY, Feature } from '../decorators/feature.decorator.js';
 
 const ADMIN_UNRESTRICTED_FEATURES = new Set<string>(['users', 'settings']);
@@ -45,14 +46,18 @@ export class FeatureGuard implements CanActivate {
 
     const dbUser = await this.prisma.user.findUnique({
       where: { id: user.id },
-      select: { permissions: true },
+      select: { permissions: true, role: true },
     });
     if (!dbUser) {
       throw new UnauthorizedException('Account no longer exists');
     }
 
-    // null permissions = role defaults (all features allowed)
-    if (dbUser.permissions === null) return true;
+    // null permissions = role defaults (restricted per role)
+    if (dbUser.permissions === null) {
+      const defaults = roleDefaultFeatures(dbUser.role);
+      if (requiredFeatures.every((f) => defaults.includes(f))) return true;
+      throw new ForbiddenException('Access to this feature is not permitted');
+    }
 
     let granted: string[];
     try {

@@ -42,12 +42,12 @@ interface WhatsAppPayload {
 export default function DiscrepanciesPage() {
   const { user } = useAuth()
   const role = user?.role
-  const canReport = role === 'STORE_KEEPER' || role === 'ADMIN'
+  const canReport = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
   const canStartReview = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
   const canManager = role === 'MANAGER' || role === 'ADMIN'
-  const canWhatsApp = role === 'MANAGER' || role === 'PURCHASER' || role === 'ADMIN'
+  const canWhatsApp = role === 'MANAGER' || role === 'ADMIN'
   const canTrack = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
-  const canVerifyReplacement = role === 'STORE_KEEPER' || role === 'ADMIN'
+  const canVerifyReplacement = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
   const { data, loading, error, reload } = useFetch<Discrepancy[]>('/discrepancies')
   const { data: pos } = useFetch<PurchaseOrder[]>('/purchase-orders')
   const { data: deliveries } = useFetch<Delivery[]>('/deliveries')
@@ -166,20 +166,15 @@ export default function DiscrepanciesPage() {
                 <td className="px-4 py-3 text-right">
                   <div className="flex flex-wrap items-center justify-end gap-1.5">
                     {canStartReview && d.status === 'ISSUE_RAISED' ? (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => runAction(() => api.post(`/discrepancies/${d.id}/start-review`, {}))}
-                        >
-                          Start Review
-                        </Button>
-                        <Button size="sm" onClick={() => setReviewDis(d)}>
-                          Manager Review
-                        </Button>
-                      </>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => runAction(() => api.post(`/discrepancies/${d.id}/start-review`, {}))}
+                      >
+                        Start Review
+                      </Button>
                     ) : null}
-                    {canManager && d.status === 'MANAGER_REVIEW' ? (
+                    {canManager && (d.status === 'ISSUE_RAISED' || d.status === 'MANAGER_REVIEW') ? (
                       <Button size="sm" onClick={() => setReviewDis(d)}>
                         Manager Review
                       </Button>

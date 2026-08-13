@@ -62,7 +62,7 @@ describe('Item bulk import (e2e)', () => {
     expect(res.status).toBe(400);
   });
 
-  it('forbids store keepers and purchasers', async () => {
+  it('forbids store keepers and managers', async () => {
     const file = buildWorkbook([
       { itemCode: 'X1', itemName: 'X', Unit: 'pcs' },
     ]);
@@ -70,11 +70,11 @@ describe('Item bulk import (e2e)', () => {
       (await upload(file, 'items.xlsx', ctx.storeKeeper.accessToken)).status,
     ).toBe(403);
     expect(
-      (await upload(file, 'items.xlsx', ctx.purchaser.accessToken)).status,
+      (await upload(file, 'items.xlsx', ctx.manager.accessToken)).status,
     ).toBe(403);
   });
 
-  it('lets a manager import new items', async () => {
+  it('lets an ADMIN import new items', async () => {
     const file = buildWorkbook([
       {
         itemCode: 'IMPORT-001',
@@ -84,7 +84,7 @@ describe('Item bulk import (e2e)', () => {
       },
       { itemCode: 'IMPORT-002', itemName: 'Steel Rod', Unit: 'ton' },
     ]);
-    const res = await upload(file, 'items.xlsx', ctx.manager.accessToken);
+    const res = await upload(file, 'items.xlsx', ctx.admin.accessToken);
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ created: 2, updated: 0, skipped: 0 });
   });

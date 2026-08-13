@@ -221,19 +221,19 @@ describe('ItemsPage', () => {
     await waitFor(() => expect(apiMock.delete).toHaveBeenCalledWith('/items/1'))
   })
 
-  it('shows the import button for admins and managers', async () => {
+  it('shows the import button for admins only', async () => {
     mocks.role = 'ADMIN'
-    await renderAsync(<ItemsPage />)
-    expect(screen.getByRole('button', { name: /import excel/i })).toBeInTheDocument()
-
-    mocks.role = 'MANAGER'
-    cleanup()
     await renderAsync(<ItemsPage />)
     expect(screen.getByRole('button', { name: /import excel/i })).toBeInTheDocument()
   })
 
   it('hides the import button for other roles', async () => {
+    mocks.role = 'MANAGER'
+    await renderAsync(<ItemsPage />)
+    expect(screen.queryByRole('button', { name: /import excel/i })).not.toBeInTheDocument()
+
     mocks.role = 'STORE_KEEPER'
+    cleanup()
     await renderAsync(<ItemsPage />)
     expect(screen.queryByRole('button', { name: /import excel/i })).not.toBeInTheDocument()
 
@@ -324,7 +324,7 @@ describe('UsersPage', () => {
     await user.type(within(dialog).getByLabelText(/name/i), 'Priya')
     await user.type(within(dialog).getByLabelText(/mobile/i), '9123456789')
     await user.type(within(dialog).getByLabelText(/password/i), 'secret123')
-    await user.selectOptions(within(dialog).getByLabelText(/role/i), 'PURCHASER')
+    await user.selectOptions(within(dialog).getByLabelText(/role/i), 'MANAGER')
     await user.selectOptions(within(dialog).getByLabelText(/status/i), 'ACTIVE')
     await user.click(within(dialog).getByRole('button', { name: /^save$/i }))
     expect(apiMock.post).toHaveBeenCalledWith('/users', {
@@ -332,7 +332,7 @@ describe('UsersPage', () => {
       mobile: '9123456789',
       email: undefined,
       password: 'secret123',
-      role: 'PURCHASER',
+      role: 'MANAGER',
       status: 'ACTIVE',
     })
   })

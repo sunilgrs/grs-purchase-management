@@ -24,11 +24,13 @@ export class VendorsController {
   }
 
   @Get()
+  @Feature()
   findAll() {
     return this.vendorsService.findAll();
   }
 
   @Get(':id')
+  @Feature()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.vendorsService.findOne(id);
   }

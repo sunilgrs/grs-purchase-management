@@ -22,7 +22,7 @@ export class DeliveriesController {
   constructor(private readonly deliveriesService: DeliveriesService) {}
 
   @Post()
-  @Roles('STORE_KEEPER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
   create(
     @Body() createDeliveryDto: CreateDeliveryDto,
     @CurrentUser() user: AuthUser,

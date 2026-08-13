@@ -1,33 +1,27 @@
 import 'dotenv/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaClient } from '../generated/client.js';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 const prisma = new PrismaClient({
-  adapter: new PrismaBetterSqlite3({
-    url: process.env.DATABASE_URL ?? 'file:./dev.db',
-  }),
+  adapter: new PrismaPg(
+    process.env.DATABASE_URL ??
+      'postgresql://grs_user:grs_dev_password@localhost:5432/grs_purchase',
+  ),
 });
 
 async function main() {
-  // Children first so foreign keys stay intact
-  await prisma.discrepancy.deleteMany();
-  await prisma.deliveryItem.deleteMany();
-  await prisma.delivery.deleteMany();
-  await prisma.purchaseOrderItem.deleteMany();
-  await prisma.purchaseOrder.deleteMany();
-  await prisma.requirementItem.deleteMany();
-  await prisma.requirement.deleteMany();
-  await prisma.item.deleteMany();
-  await prisma.category.deleteMany();
-  await prisma.vendor.deleteMany();
-  await prisma.store.deleteMany();
-  await prisma.auditLog.deleteMany();
-  await prisma.notificationRead.deleteMany();
-  await prisma.user.deleteMany();
-
-  // Restart all AUTOINCREMENT counters from 1
-  await prisma.$executeRawUnsafe('DELETE FROM sqlite_sequence');
+  // Wipe every table and restart identity counters from 1
+  await prisma.$executeRawUnsafe(`
+    DO $$
+    DECLARE
+      r RECORD;
+    BEGIN
+      FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
+        EXECUTE 'TRUNCATE TABLE public.' || quote_ident(r.tablename) || ' RESTART IDENTITY CASCADE';
+      END LOOP;
+    END $$;
+  `);
 
   // Keep a single admin account so the app can be logged into
   const admin = await prisma.user.create({

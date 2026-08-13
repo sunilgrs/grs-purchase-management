@@ -52,10 +52,10 @@ const label = (status: string) => status.replace(/_/g, ' ')
 export default function RequirementsPage() {
   const { user } = useAuth()
   const role = user?.role
-  const canCreate = role === 'STORE_KEEPER' || role === 'ADMIN'
-  const canSubmit = role === 'STORE_KEEPER' || role === 'ADMIN'
+  const canCreate = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
+  const canSubmit = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
   const canManager = role === 'MANAGER' || role === 'ADMIN'
-  const canWhatsApp = role === 'MANAGER' || role === 'PURCHASER' || role === 'ADMIN'
+  const canWhatsApp = role === 'MANAGER' || role === 'ADMIN'
   const canVerify = role === 'STORE_KEEPER' || role === 'MANAGER' || role === 'ADMIN'
   const { data, loading, error, reload } = useFetch<Requirement[]>('/requirements')
   const { data: stores } = useFetch<Store[]>('/stores')
@@ -181,7 +181,7 @@ export default function RequirementsPage() {
                         Submit
                       </Button>
                     ) : null}
-                    {canSubmit && r.status === 'SUBMITTED' ? (
+                    {canManager && r.status === 'SUBMITTED' ? (
                       <Button size="sm" variant="secondary" onClick={() => setReviewReq(r)}>
                         Store Manager Review
                       </Button>

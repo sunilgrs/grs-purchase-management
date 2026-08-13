@@ -1,12 +1,13 @@
 import 'dotenv/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaClient } from '../generated/client.js';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 const prisma = new PrismaClient({
-  adapter: new PrismaBetterSqlite3({
-    url: process.env.DATABASE_URL ?? 'file:./dev.db',
-  }),
+  adapter: new PrismaPg(
+    process.env.DATABASE_URL ??
+      'postgresql://grs_user:grs_dev_password@localhost:5432/grs_purchase',
+  ),
 });
 
 const datePart = (d: Date) => {
@@ -55,13 +56,13 @@ async function main() {
       role: 'STORE_KEEPER',
     },
   });
-  const purchaser = await prisma.user.create({
+  const storeKeeper2 = await prisma.user.create({
     data: {
       name: 'Priya Sharma',
       mobile: '9000000003',
       email: 'priya@grs.example',
       password: staffPassword,
-      role: 'PURCHASER',
+      role: 'STORE_KEEPER',
     },
   });
   const manager = await prisma.user.create({
@@ -362,7 +363,7 @@ async function main() {
   console.log(`    Admin:   admin@grs.example / admin123`);
   console.log(`    Manager: manager@grs.example / manager123`);
   console.log(`    Store:   ramesh@grs.example / staff123`);
-  console.log(`    Purch:   priya@grs.example / staff123`);
+  console.log(`    Store2:  priya@grs.example / staff123`);
   console.log(`  Requirements: ${completedReq.requirementNo} (COMPLETED), ${awaitingReq.requirementNo} (AWAITING_DELIVERY), ${receivedReq.requirementNo} (MATERIAL_RECEIVED), plus DRAFT/SUBMITTED/REJECTED.`);
 }
 

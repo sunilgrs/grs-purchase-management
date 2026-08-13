@@ -30,11 +30,13 @@ export class UsersController {
   }
 
   @Get()
+  @Feature()
   findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
+  @Feature()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }

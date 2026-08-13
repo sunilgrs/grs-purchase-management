@@ -22,7 +22,9 @@ function makeGuard(options: {
   };
   const prisma = {
     user: {
-      findUnique: jest.fn(() => Promise.resolve({ permissions })),
+      findUnique: jest.fn(() =>
+        Promise.resolve({ permissions, role }),
+      ),
     },
   };
   const guard = new FeatureGuard(reflector as never, prisma as never);
@@ -50,13 +52,57 @@ describe('FeatureGuard', () => {
     );
   });
 
-  it('allows a user with no explicit permissions (role defaults)', async () => {
-    const { guard, context, prisma } = makeGuard({ permissions: null });
+  it('allows a STORE_KEEPER with no explicit permissions on default features', async () => {
+    const { guard, context, prisma } = makeGuard({
+      permissions: null,
+      role: 'STORE_KEEPER',
+    });
     await expect(guard.canActivate(context)).resolves.toBe(true);
     expect(prisma.user.findUnique).toHaveBeenCalledWith({
       where: { id: 1 },
-      select: { permissions: true },
+      select: { permissions: true, role: true },
     });
+  });
+
+  it('rejects a STORE_KEEPER with no explicit permissions on a non-default feature', async () => {
+    const { guard, context } = makeGuard({
+      feature: ['audit-logs'],
+      permissions: null,
+      role: 'STORE_KEEPER',
+    });
+    await expect(guard.canActivate(context)).rejects.toThrow(
+      ForbiddenException,
+    );
+  });
+
+  it('allows a MANAGER with no explicit permissions on default features', async () => {
+    const { guard, context } = makeGuard({
+      feature: ['purchase-orders'],
+      permissions: null,
+      role: 'MANAGER',
+    });
+    await expect(guard.canActivate(context)).resolves.toBe(true);
+  });
+
+  it('rejects a MANAGER with no explicit permissions on a non-default feature', async () => {
+    const { guard, context } = makeGuard({
+      feature: ['audit-logs'],
+      permissions: null,
+      role: 'MANAGER',
+    });
+    await expect(guard.canActivate(context)).rejects.toThrow(
+      ForbiddenException,
+    );
+  });
+
+  it('rejects a PURCHASER with no explicit permissions on any feature', async () => {
+    const { guard, context } = makeGuard({
+      permissions: null,
+      role: 'PURCHASER',
+    });
+    await expect(guard.canActivate(context)).rejects.toThrow(
+      ForbiddenException,
+    );
   });
 
   it('allows a user whose permissions include the feature', async () => {

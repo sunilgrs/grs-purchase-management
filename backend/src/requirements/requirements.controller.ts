@@ -27,7 +27,7 @@ export class RequirementsController {
   constructor(private readonly requirementsService: RequirementsService) {}
 
   @Post()
-  @Roles('STORE_KEEPER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
   create(@Body() createRequirementDto: CreateRequirementDto) {
     return this.requirementsService.create(createRequirementDto);
   }
@@ -56,13 +56,13 @@ export class RequirementsController {
   }
 
   @Post(':id/submit')
-  @Roles('STORE_KEEPER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
   submit(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: AuthUser) {
     return this.requirementsService.submit(id, user.id);
   }
 
   @Post(':id/store-manager-review')
-  @Roles('STORE_KEEPER', 'ADMIN')
+  @Roles('MANAGER', 'ADMIN')
   storeManagerReview(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: ReviewRequirementDto,
@@ -92,7 +92,7 @@ export class RequirementsController {
   }
 
   @Post(':id/mark-whatsapp-sent')
-  @Roles('MANAGER', 'PURCHASER', 'ADMIN')
+  @Roles('MANAGER', 'ADMIN')
   markWhatsAppSent(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,
@@ -101,7 +101,7 @@ export class RequirementsController {
   }
 
   @Post(':id/mark-awaiting-delivery')
-  @Roles('MANAGER', 'PURCHASER', 'ADMIN')
+  @Roles('MANAGER', 'ADMIN')
   markAwaitingDelivery(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,
@@ -129,7 +129,7 @@ export class RequirementsController {
   }
 
   @Get(':id/whatsapp-message')
-  @Roles('MANAGER', 'PURCHASER', 'ADMIN')
+  @Roles('MANAGER', 'ADMIN')
   whatsappMessage(@Param('id', ParseIntPipe) id: number) {
     return this.requirementsService.whatsappMessage(id);
   }

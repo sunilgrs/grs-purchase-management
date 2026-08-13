@@ -31,11 +31,13 @@ export class PurchaseOrdersController {
   }
 
   @Get()
+  @Feature()
   findAll() {
     return this.purchaseOrdersService.findAll();
   }
 
   @Get(':id')
+  @Feature()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.purchaseOrdersService.findOne(id);
   }

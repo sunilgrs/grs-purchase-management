@@ -130,17 +130,18 @@ describe('RequirementsPage', () => {
     cleanup()
   })
 
-  it('shows New Requirement only to store keepers and admins', () => {
+  it('shows New Requirement to store keepers, managers and admins', () => {
     mocks.role = 'STORE_KEEPER'
+    renderPage()
+    expect(screen.getByRole('button', { name: /new requirement/i })).toBeInTheDocument()
+
+    mocks.role = 'MANAGER'
+    cleanup()
     renderPage()
     expect(screen.getByRole('button', { name: /new requirement/i })).toBeInTheDocument()
   })
 
-  it('hides New Requirement for manager and purchaser', () => {
-    mocks.role = 'MANAGER'
-    renderPage()
-    expect(screen.queryByRole('button', { name: /new requirement/i })).not.toBeInTheDocument()
-
+  it('hides New Requirement from purchasers', () => {
     mocks.role = 'PURCHASER'
     renderPage()
     expect(screen.queryByRole('button', { name: /new requirement/i })).not.toBeInTheDocument()
@@ -172,8 +173,8 @@ describe('RequirementsPage', () => {
     expect(screen.getByRole('button', { name: /reject/i })).toBeInTheDocument()
   })
 
-  it('shows WhatsApp and Awaiting Delivery to purchaser for VENDOR_ASSIGNED', () => {
-    mocks.role = 'PURCHASER'
+  it('shows WhatsApp and Awaiting Delivery to manager for VENDOR_ASSIGNED', () => {
+    mocks.role = 'MANAGER'
     mocks.reqs = [makeReq({ status: 'VENDOR_ASSIGNED' })]
     renderPage()
     expect(screen.getByRole('button', { name: /whatsapp/i })).toBeInTheDocument()
@@ -243,7 +244,7 @@ describe('RequirementsPage', () => {
 
   it('approves a requirement in store manager review', async () => {
     const userEv = userEvent.setup()
-    mocks.role = 'STORE_KEEPER'
+    mocks.role = 'MANAGER'
     mocks.reqs = [makeReq({ status: 'SUBMITTED' })]
     mocks.apiPost.mockResolvedValue({})
     renderPage()
@@ -255,7 +256,7 @@ describe('RequirementsPage', () => {
 
   it('rejects a requirement in store manager review', async () => {
     const userEv = userEvent.setup()
-    mocks.role = 'STORE_KEEPER'
+    mocks.role = 'MANAGER'
     mocks.reqs = [makeReq({ status: 'SUBMITTED' })]
     mocks.apiPost.mockResolvedValue({})
     renderPage()
@@ -302,7 +303,7 @@ describe('RequirementsPage', () => {
 
   it('marks a VENDOR_ASSIGNED requirement as awaiting delivery', async () => {
     const userEv = userEvent.setup()
-    mocks.role = 'PURCHASER'
+    mocks.role = 'MANAGER'
     mocks.reqs = [makeReq({ status: 'VENDOR_ASSIGNED' })]
     mocks.apiPost.mockResolvedValue({})
     renderPage()
@@ -322,7 +323,7 @@ describe('RequirementsPage', () => {
 
   it('loads the WhatsApp message and marks it as sent', async () => {
     const userEv = userEvent.setup()
-    mocks.role = 'PURCHASER'
+    mocks.role = 'MANAGER'
     mocks.reqs = [makeReq({ status: 'VENDOR_ASSIGNED' })]
     mocks.apiGet.mockResolvedValue({
       message: 'Order for Acme',
@@ -344,7 +345,7 @@ describe('RequirementsPage', () => {
 
   it('switches between WhatsApp message formats', async () => {
     const userEv = userEvent.setup()
-    mocks.role = 'PURCHASER'
+    mocks.role = 'MANAGER'
     mocks.reqs = [makeReq({ status: 'VENDOR_ASSIGNED' })]
     mocks.apiGet.mockResolvedValue({
       message: 'Formal message',
@@ -380,7 +381,7 @@ describe('RequirementsPage', () => {
 
   it('copies the WhatsApp message', async () => {
     const userEv = userEvent.setup()
-    mocks.role = 'PURCHASER'
+    mocks.role = 'MANAGER'
     mocks.reqs = [makeReq({ status: 'VENDOR_ASSIGNED' })]
     mocks.apiGet.mockResolvedValue({
       message: 'Hello Acme',
@@ -408,7 +409,7 @@ describe('RequirementsPage', () => {
 
   it('shows an error when the WhatsApp message fails to load', async () => {
     const userEv = userEvent.setup()
-    mocks.role = 'PURCHASER'
+    mocks.role = 'MANAGER'
     mocks.reqs = [makeReq({ status: 'VENDOR_ASSIGNED' })]
     mocks.apiGet.mockRejectedValue(new Error('Failed to load'))
     renderPage()

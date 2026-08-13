@@ -1,6 +1,16 @@
 import { createContext, useCallback, useMemo, useState, type ReactNode } from 'react'
 import { api, clearSession, getSessionUser, getToken, setSession } from '../lib/api'
+import { ALL_FEATURES } from '../lib/features'
 import type { AuthUser } from '../types'
+
+const STORE_KEEPER_FEATURES = ['dashboard', 'requirements', 'deliveries', 'discrepancies']
+
+const ROLE_DEFAULT_FEATURES: Record<string, string[]> = {
+  STORE_KEEPER: STORE_KEEPER_FEATURES,
+  MANAGER: [...STORE_KEEPER_FEATURES, 'purchase-orders'],
+  ADMIN: ALL_FEATURES.map((f) => f.key),
+  PURCHASER: [],
+}
 
 export interface AuthContextValue {
   user: AuthUser | null
@@ -68,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (user.role === 'ADMIN' && (feature === 'users' || feature === 'settings'))
         return true
       if (user.permissions === null || user.permissions === undefined)
-        return true
+        return (ROLE_DEFAULT_FEATURES[user.role] ?? []).includes(feature)
       return user.permissions.includes(feature)
     },
     [user],

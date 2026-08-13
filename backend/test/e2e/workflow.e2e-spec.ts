@@ -53,7 +53,7 @@ describe('Purchase workflow (e2e)', () => {
       .expect(201);
     await server()
       .post(`/api/requirements/${reqId}/store-manager-review`)
-      .set(auth(token))
+      .set(auth(ctx.manager.accessToken))
       .send({ approve: true })
       .expect(201);
 
@@ -79,7 +79,7 @@ describe('Purchase workflow (e2e)', () => {
 
     const wa = await server()
       .get(`/api/requirements/${reqId}/whatsapp-message`)
-      .set(auth(ctx.purchaser.accessToken))
+      .set(auth(ctx.manager.accessToken))
       .expect(200);
     expect(wa.body.message).toContain('E2E Vendor A');
     expect(wa.body.waLink).toContain('https://wa.me/9111111111');
@@ -194,7 +194,7 @@ describe('Purchase workflow (e2e)', () => {
       .expect(201);
     await server()
       .post(`/api/requirements/${reqId}/store-manager-review`)
-      .set(auth(token))
+      .set(auth(ctx.manager.accessToken))
       .send({ approve: true })
       .expect(201);
     const approve = await server()
@@ -247,7 +247,7 @@ describe('Purchase workflow (e2e)', () => {
 
     const wa = await server()
       .get(`/api/discrepancies/${disId}/whatsapp-message`)
-      .set(auth(ctx.purchaser.accessToken))
+      .set(auth(ctx.manager.accessToken))
       .expect(200);
     expect(wa.body.message).toContain('E2E Vendor B');
 
@@ -296,7 +296,7 @@ describe('Purchase workflow (e2e)', () => {
       .expect(201);
     await server()
       .post(`/api/requirements/${reqId}/store-manager-review`)
-      .set(auth(token))
+      .set(auth(ctx.manager.accessToken))
       .send({ approve: true })
       .expect(201);
     const approve = await server()

@@ -75,7 +75,6 @@ export interface TestContext {
   admin: { id: number; role: string; accessToken: string };
   manager: { id: number; role: string; accessToken: string };
   storeKeeper: { id: number; role: string; accessToken: string };
-  purchaser: { id: number; role: string; accessToken: string };
 }
 
 export async function seedTestContext(
@@ -154,13 +153,6 @@ export async function seedTestContext(
     password: 'secret123',
     role: 'STORE_KEEPER',
   });
-  const purchaser = await registerUser(app, {
-    name: 'E2E Purchaser',
-    mobile: '9100000004',
-    email: 'e2e-purchaser@test.example',
-    password: 'secret123',
-    role: 'PURCHASER',
-  });
 
   return {
     app,
@@ -174,6 +166,5 @@ export async function seedTestContext(
     admin,
     manager,
     storeKeeper,
-    purchaser,
   };
 }

@@ -23,7 +23,7 @@ export function ItemImportButton({ onDone }: { onDone: () => void }) {
   const [summary, setSummary] = useState<ImportSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  if (user?.role !== 'ADMIN' && user?.role !== 'MANAGER') return null
+  if (user?.role !== 'ADMIN') return null
 
   const upload = async (file: File) => {
     const form = new FormData()

@@ -82,7 +82,7 @@ describe('Feature permissions (e2e)', () => {
 
   it('blocks access to features that were not granted', async () => {
     await request(app.getHttpServer())
-      .get('/api/vendors')
+      .get('/api/audit-logs')
       .set(auth(ctx.manager.accessToken))
       .expect(403);
   });
@@ -94,7 +94,7 @@ describe('Feature permissions (e2e)', () => {
       .expect(403);
   });
 
-  it('resets to defaults (null) to restore full access', async () => {
+  it('resets to defaults (null) to restore role-default access', async () => {
     await request(app.getHttpServer())
       .patch(`/api/users/${ctx.manager.id}/permissions`)
       .set(auth(ctx.admin.accessToken))
@@ -102,9 +102,13 @@ describe('Feature permissions (e2e)', () => {
       .expect(200);
 
     await request(app.getHttpServer())
-      .get('/api/vendors')
+      .get('/api/dashboard/summary')
       .set(auth(ctx.manager.accessToken))
       .expect(200);
+    await request(app.getHttpServer())
+      .get('/api/audit-logs')
+      .set(auth(ctx.manager.accessToken))
+      .expect(403);
   });
 
   it('keeps ADMIN access to /users even when restricted elsewhere', async () => {
@@ -135,7 +139,7 @@ describe('Feature permissions (e2e)', () => {
       .expect(200);
 
     await request(app.getHttpServer())
-      .get('/api/vendors')
+      .get('/api/audit-logs')
       .set(auth(ctx.admin.accessToken))
       .expect(403);
 
@@ -158,7 +162,7 @@ describe('Feature permissions (e2e)', () => {
       .set(auth(ctx.storeKeeper.accessToken))
       .expect(200);
     await request(app.getHttpServer())
-      .get('/api/items')
+      .get('/api/deliveries')
       .set(auth(ctx.storeKeeper.accessToken))
       .expect(403);
     await request(app.getHttpServer())

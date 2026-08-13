@@ -116,8 +116,15 @@ describe('AuthService.register', () => {
 
   it('honours a non-admin role from the payload', async () => {
     const { service, createArgs } = makeService(null);
-    await service.register({ ...registerDto, role: 'PURCHASER' });
-    expect(createArgs()?.data.role).toBe('PURCHASER');
+    await service.register({ ...registerDto, role: 'MANAGER' });
+    expect(createArgs()?.data.role).toBe('MANAGER');
+  });
+
+  it('rejects a PURCHASER self-registration', async () => {
+    const { service } = makeService(null);
+    await expect(
+      service.register({ ...registerDto, role: 'PURCHASER' }),
+    ).rejects.toThrow(ForbiddenException);
   });
 });
 

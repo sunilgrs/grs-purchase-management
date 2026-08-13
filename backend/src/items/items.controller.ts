@@ -24,7 +24,7 @@ export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 
   @Post('import')
-  @Roles('ADMIN', 'MANAGER')
+  @Roles('ADMIN')
   @UseInterceptors(
     FileInterceptor('file', { limits: { fileSize: 2 * 1024 * 1024 } }),
   )
@@ -45,11 +45,13 @@ export class ItemsController {
   }
 
   @Get()
+  @Feature()
   findAll() {
     return this.itemsService.findAll();
   }
 
   @Get(':id')
+  @Feature()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.itemsService.findOne(id);
   }

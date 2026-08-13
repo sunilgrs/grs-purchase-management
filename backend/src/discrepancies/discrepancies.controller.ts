@@ -26,7 +26,7 @@ export class DiscrepanciesController {
   constructor(private readonly discrepanciesService: DiscrepanciesService) {}
 
   @Post()
-  @Roles('STORE_KEEPER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
   create(@Body() createDiscrepancyDto: CreateDiscrepancyDto) {
     return this.discrepanciesService.create(createDiscrepancyDto);
   }
@@ -42,7 +42,7 @@ export class DiscrepanciesController {
   }
 
   @Get(':id/whatsapp-message')
-  @Roles('MANAGER', 'PURCHASER', 'ADMIN')
+  @Roles('MANAGER', 'ADMIN')
   whatsappMessage(@Param('id', ParseIntPipe) id: number) {
     return this.discrepanciesService.whatsappMessage(id);
   }
@@ -80,7 +80,7 @@ export class DiscrepanciesController {
   }
 
   @Post(':id/await-replacement')
-  @Roles('STORE_KEEPER', 'MANAGER', 'PURCHASER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
   awaitReplacement(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: AuthUser,
@@ -98,7 +98,7 @@ export class DiscrepanciesController {
   }
 
   @Post(':id/verify')
-  @Roles('STORE_KEEPER', 'ADMIN')
+  @Roles('STORE_KEEPER', 'MANAGER', 'ADMIN')
   verify(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: VerifyDiscrepancyDto,

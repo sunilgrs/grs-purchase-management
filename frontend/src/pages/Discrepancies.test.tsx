@@ -116,24 +116,33 @@ describe('DiscrepanciesPage', () => {
     cleanup()
   })
 
-  it('shows Report Discrepancy only to store keepers and admins', () => {
+  it('shows Report Discrepancy to store keepers, managers and admins', () => {
     mocks.role = 'STORE_KEEPER'
+    renderPage()
+    expect(screen.getByRole('button', { name: /report discrepancy/i })).toBeInTheDocument()
+
+    mocks.role = 'MANAGER'
+    cleanup()
     renderPage()
     expect(screen.getByRole('button', { name: /report discrepancy/i })).toBeInTheDocument()
   })
 
-  it('hides Report Discrepancy for manager and purchaser', () => {
-    mocks.role = 'MANAGER'
-    renderPage()
-    expect(screen.queryByRole('button', { name: /report discrepancy/i })).not.toBeInTheDocument()
-
+  it('hides Report Discrepancy from purchasers', () => {
     mocks.role = 'PURCHASER'
     renderPage()
     expect(screen.queryByRole('button', { name: /report discrepancy/i })).not.toBeInTheDocument()
   })
 
-  it('shows Start Review to store keeper for ISSUE_RAISED', () => {
+  it('shows Start Review but not Manager Review to store keeper for ISSUE_RAISED', () => {
     mocks.role = 'STORE_KEEPER'
+    mocks.dis = [makeDis({})]
+    renderPage()
+    expect(screen.getByRole('button', { name: /start review/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /manager review/i })).not.toBeInTheDocument()
+  })
+
+  it('shows both Start Review and Manager Review to a manager for ISSUE_RAISED', () => {
+    mocks.role = 'MANAGER'
     mocks.dis = [makeDis({})]
     renderPage()
     expect(screen.getByRole('button', { name: /start review/i })).toBeInTheDocument()
@@ -161,8 +170,8 @@ describe('DiscrepanciesPage', () => {
     expect(screen.queryByRole('button', { name: /manager review/i })).not.toBeInTheDocument()
   })
 
-  it('shows WhatsApp and Awaiting Replacement to purchaser for VENDOR_NOTIFIED', () => {
-    mocks.role = 'PURCHASER'
+  it('shows WhatsApp and Awaiting Replacement to manager for VENDOR_NOTIFIED', () => {
+    mocks.role = 'MANAGER'
     mocks.dis = [makeDis({ status: 'VENDOR_NOTIFIED' })]
     renderPage()
     expect(screen.getByRole('button', { name: /whatsapp/i })).toBeInTheDocument()
@@ -197,11 +206,11 @@ describe('DiscrepanciesPage', () => {
     expect(screen.getByRole('button', { name: /verify replacement/i })).toBeInTheDocument()
   })
 
-  it('hides Verify Replacement from manager', () => {
+  it('shows Verify Replacement to manager for REPLACEMENT_RECEIVED', () => {
     mocks.role = 'MANAGER'
     mocks.dis = [makeDis({ status: 'REPLACEMENT_RECEIVED' })]
     renderPage()
-    expect(screen.queryByRole('button', { name: /verify replacement/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /verify replacement/i })).toBeInTheDocument()
   })
 
   it('shows Complete to manager for VERIFIED', () => {
@@ -289,7 +298,7 @@ describe('DiscrepanciesPage', () => {
 
   it('loads the replacement WhatsApp message', async () => {
     const userEv = userEvent.setup()
-    mocks.role = 'PURCHASER'
+    mocks.role = 'MANAGER'
     mocks.dis = [makeDis({ status: 'VENDOR_NOTIFIED' })]
     mocks.apiGet.mockResolvedValue({
       message: 'Please replace the missing items',
@@ -309,7 +318,7 @@ describe('DiscrepanciesPage', () => {
 
   it('switches between replacement WhatsApp message formats', async () => {
     const userEv = userEvent.setup()
-    mocks.role = 'PURCHASER'
+    mocks.role = 'MANAGER'
     mocks.dis = [makeDis({ status: 'VENDOR_NOTIFIED' })]
     mocks.apiGet.mockResolvedValue({
       message: 'Formal replacement',
@@ -337,7 +346,7 @@ describe('DiscrepanciesPage', () => {
 
   it('shows an error when the replacement message fails to load', async () => {
     const userEv = userEvent.setup()
-    mocks.role = 'PURCHASER'
+    mocks.role = 'MANAGER'
     mocks.dis = [makeDis({ status: 'VENDOR_NOTIFIED' })]
     mocks.apiGet.mockRejectedValue(new Error('Failed to load'))
     renderPage()
@@ -347,7 +356,7 @@ describe('DiscrepanciesPage', () => {
 
   it('marks a VENDOR_NOTIFIED discrepancy as awaiting replacement', async () => {
     const userEv = userEvent.setup()
-    mocks.role = 'PURCHASER'
+    mocks.role = 'MANAGER'
     mocks.dis = [makeDis({ status: 'VENDOR_NOTIFIED' })]
     mocks.apiPost.mockResolvedValue({})
     renderPage()

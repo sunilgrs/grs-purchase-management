@@ -7,18 +7,9 @@ import {
   MinLength,
 } from 'class-validator';
 
-export const USER_ROLES = [
-  'ADMIN',
-  'STORE_KEEPER',
-  'MANAGER',
-  'PURCHASER',
-] as const;
+export const USER_ROLES = ['ADMIN', 'STORE_KEEPER', 'MANAGER'] as const;
 
-export const PUBLIC_REGISTER_ROLES = [
-  'STORE_KEEPER',
-  'MANAGER',
-  'PURCHASER',
-] as const;
+export const PUBLIC_REGISTER_ROLES = ['STORE_KEEPER', 'MANAGER'] as const;
 
 export class RegisterDto {
   @IsString()

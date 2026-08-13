@@ -1,6 +1,6 @@
 ﻿import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '../../generated/client.js';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 @Injectable()
 export class PrismaService
@@ -9,9 +9,10 @@ export class PrismaService
 {
   constructor() {
     super({
-      adapter: new PrismaBetterSqlite3({
-        url: process.env.DATABASE_URL ?? 'file:./dev.db',
-      }),
+      adapter: new PrismaPg(
+        process.env.DATABASE_URL ??
+          'postgresql://grs_user:grs_dev_password@localhost:5432/grs_purchase',
+      ),
     });
   }
 
