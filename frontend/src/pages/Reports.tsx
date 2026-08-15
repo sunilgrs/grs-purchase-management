@@ -147,18 +147,18 @@ export default function ReportsPage() {
               {data.from} → {data.to} · {data.count} orders
             </span>
           </div>
-          <Table headers={['Label', 'Orders', 'Spend']}>
+          <Table headers={['Label', { label: 'Orders', align: 'right' }, { label: 'Spend', align: 'right' }]}>
             {data.rows.map((r) => (
               <tr key={r.label}>
                 <td className="px-4 py-3 text-sm font-medium text-emerald-950">{r.label}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{r.count}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{money(r.spend)}</td>
+                <td className="px-4 py-3 text-right text-sm text-slate-600">{r.count}</td>
+                <td className="px-4 py-3 text-right text-sm text-slate-600">{money(r.spend)}</td>
               </tr>
             ))}
             <tr className="bg-emerald-50/60">
               <td className="px-4 py-3 text-sm font-semibold text-emerald-950">Total</td>
-              <td className="px-4 py-3 text-sm font-semibold text-emerald-950">{data.count}</td>
-              <td className="px-4 py-3 text-sm font-semibold text-emerald-950">{money(data.total)}</td>
+              <td className="px-4 py-3 text-right text-sm font-semibold text-emerald-950">{data.count}</td>
+              <td className="px-4 py-3 text-right text-sm font-semibold text-emerald-950">{money(data.total)}</td>
             </tr>
           </Table>
         </Card>

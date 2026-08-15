@@ -192,7 +192,7 @@ export default function PurchaseOrdersPage() {
         ) : !data || data.length === 0 ? (
           <div className="px-6 py-16 text-center text-sm text-slate-400">No purchase orders yet.</div>
         ) : (
-          <Table headers={['PO #', 'Vendor', 'Requirement', 'Expected', 'Status', 'Items', '']}>
+          <Table headers={['PO #', 'Vendor', 'Requirement', 'Expected', 'Status', { label: 'Items', align: 'right' }, '']}>
             {data.map((po) => (
               <tr key={po.id} className="hover:bg-emerald-50/70">
                 <td className="px-4 py-3 font-mono text-xs font-medium text-emerald-950">{po.poNumber}</td>
@@ -202,7 +202,7 @@ export default function PurchaseOrdersPage() {
                 <td className="px-4 py-3">
                   <Badge color={badgeColor(poStatus(po))}>{poStatus(po).replace('_', ' ')}</Badge>
                 </td>
-                <td className="px-4 py-3">{po._count?.items ?? po.items?.length ?? 0}</td>
+                <td className="px-4 py-3 text-right">{po._count?.items ?? po.items?.length ?? 0}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
                     <Button size="sm" variant="ghost" onClick={() => setViewing(po)}>View</Button>
@@ -355,7 +355,7 @@ function PODetail({ po, onClose }: { po: PurchaseOrder | null; onClose: () => vo
             <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">{po.notes}</p>
           )}
 
-          <Table headers={['Item', 'Unit', 'Ordered', 'Received', 'Unit Price', 'Amount']}>
+          <Table headers={['Item', 'Unit', { label: 'Ordered', align: 'right' }, { label: 'Received', align: 'right' }, { label: 'Unit Price', align: 'right' }, { label: 'Amount', align: 'right' }]}>
             {(po.items ?? []).map((it) => (
               <tr key={it.id}>
                 <td className="px-4 py-2.5">
@@ -363,17 +363,17 @@ function PODetail({ po, onClose }: { po: PurchaseOrder | null; onClose: () => vo
                   <span className="ml-2 font-mono text-xs text-slate-400">{it.Item?.itemCode}</span>
                 </td>
                 <td className="px-4 py-2.5">{it.Item?.unit ?? '—'}</td>
-                <td className="px-4 py-2.5 font-medium">{it.orderedQty}</td>
-                <td className="px-4 py-2.5">{it.receivedQty}</td>
-                <td className="px-4 py-2.5">{it.unitPrice != null ? `₹${formatNumber(it.unitPrice, 0)}` : '—'}</td>
-                <td className="px-4 py-2.5 font-medium">₹{formatNumber(it.orderedQty * (it.unitPrice ?? 0), 0)}</td>
+                <td className="px-4 py-2.5 text-right font-medium">{it.orderedQty}</td>
+                <td className="px-4 py-2.5 text-right">{it.receivedQty}</td>
+                <td className="px-4 py-2.5 text-right">{it.unitPrice != null ? `₹${formatNumber(it.unitPrice, 0)}` : '—'}</td>
+                <td className="px-4 py-2.5 text-right font-medium">₹{formatNumber(it.orderedQty * (it.unitPrice ?? 0), 0)}</td>
               </tr>
             ))}
             <tr className="bg-slate-50">
               <td className="px-4 py-2.5 text-right font-semibold text-emerald-950" colSpan={5}>
                 Total
               </td>
-              <td className="px-4 py-2.5 font-semibold text-emerald-950">₹{formatNumber(total, 0)}</td>
+              <td className="px-4 py-2.5 text-right font-semibold text-emerald-950">₹{formatNumber(total, 0)}</td>
             </tr>
           </Table>
         </div>

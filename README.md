@@ -189,7 +189,6 @@ Admins can control which tabs each user can open from the **Settings** tab
 | Role          | Email                 | Password   |
 | ------------- | --------------------- | ---------- |
 | Admin         | admin@grs.example     | admin123   |
-| Manager       | manager@grs.example   | manager123 |
 | Store manager | priya@grs.example     | staff123   |
 | Store keeper  | ramesh@grs.example    | staff123   |
 

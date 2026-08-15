@@ -121,7 +121,7 @@ export default function DeliveriesPage() {
             No deliveries yet. Click “Record Delivery” to receive goods against a purchase order.
           </div>
         ) : (
-          <Table headers={['PO', 'Delivery Date', 'Received By', 'Status', 'Items', 'Issues', '']}>
+          <Table headers={['PO', 'Delivery Date', 'Received By', 'Status', { label: 'Items', align: 'right' }, { label: 'Issues', align: 'right' }, '']}>
             {data.map((d) => (
               <tr key={d.id} className="hover:bg-emerald-50/70">
                 <td className="px-4 py-3 font-mono text-xs font-medium text-emerald-950">
@@ -132,8 +132,8 @@ export default function DeliveriesPage() {
                 <td className="px-4 py-3">
                   <Badge color={badgeColor(d.status)}>{d.status.replace('_', ' ')}</Badge>
                 </td>
-                <td className="px-4 py-3">{d._count?.items ?? d.items?.length ?? 0}</td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 text-right">{d._count?.items ?? d.items?.length ?? 0}</td>
+                <td className="px-4 py-3 text-right">
                   {(d._count?.Discrepancy ?? 0) > 0 ? (
                     <Badge color="red">{d._count!.Discrepancy}</Badge>
                   ) : (
@@ -186,7 +186,7 @@ export default function DeliveriesPage() {
               <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">{viewing.remarks}</p>
             )}
 
-            <Table headers={['Item', 'Unit', 'Received', 'Condition']}>
+            <Table headers={['Item', 'Unit', { label: 'Received', align: 'right' }, 'Condition']}>
               {(viewing.items ?? []).map((it) => (
                 <tr key={it.id}>
                   <td className="px-4 py-2.5">
@@ -194,7 +194,7 @@ export default function DeliveriesPage() {
                     <span className="ml-2 font-mono text-xs text-slate-400">{it.Item?.itemCode}</span>
                   </td>
                   <td className="px-4 py-2.5">{it.Item?.unit ?? '—'}</td>
-                  <td className="px-4 py-2.5 font-medium">{it.receivedQty}</td>
+                  <td className="px-4 py-2.5 text-right font-medium">{it.receivedQty}</td>
                   <td className="px-4 py-2.5">
                     <Badge color={badgeColor(it.condition)}>{it.condition.replace('_', ' ')}</Badge>
                   </td>

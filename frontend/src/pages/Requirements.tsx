@@ -202,7 +202,7 @@ export default function RequirementsPage() {
         ) : !data || data.length === 0 ? (
           <div className="px-6 py-16 text-center text-sm text-slate-400">No requirements yet.</div>
         ) : (
-          <Table headers={['Req #', 'Store', 'Requested By', 'Required Date', 'Priority', 'Status', 'Items', '']}>
+          <Table headers={['Req #', 'Store', 'Requested By', 'Required Date', 'Priority', 'Status', { label: 'Items', align: 'right' }, '']}>
             {data.map((r) => (
               <tr key={r.id} className="hover:bg-emerald-50/70">
                 <td className="px-4 py-3 font-mono text-xs font-medium text-emerald-950">{r.requirementNo}</td>
@@ -215,7 +215,7 @@ export default function RequirementsPage() {
                 <td className="px-4 py-3">
                   <Badge color={badgeColor(r.status)}>{label(r.status)}</Badge>
                 </td>
-                <td className="px-4 py-3">{r._count?.items ?? r.items?.length ?? 0}</td>
+                <td className="px-4 py-3 text-right">{r._count?.items ?? r.items?.length ?? 0}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex flex-wrap items-center justify-end gap-1.5">
                     {canEdit(r) ? (
@@ -861,7 +861,7 @@ export function RequirementDetail({
           {requirement.remarks && (
             <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">{requirement.remarks}</p>
           )}
-          <Table headers={['Item', 'Unit', 'Qty']}>
+          <Table headers={['Item', 'Unit', { label: 'Qty', align: 'right' }]}>
             {(requirement.items ?? []).map((it) => (
               <tr key={it.id}>
                 <td className="px-4 py-2.5">
@@ -869,7 +869,7 @@ export function RequirementDetail({
                   <span className="ml-2 font-mono text-xs text-slate-400">{it.Item?.itemCode}</span>
                 </td>
                 <td className="px-4 py-2.5">{it.Item?.unit ?? '—'}</td>
-                <td className="px-4 py-2.5 font-medium">{it.quantity}</td>
+                <td className="px-4 py-2.5 text-right font-medium">{it.quantity}</td>
               </tr>
             ))}
           </Table>

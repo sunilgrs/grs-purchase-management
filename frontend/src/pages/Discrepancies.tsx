@@ -155,7 +155,7 @@ export default function DiscrepanciesPage() {
         ) : !data || data.length === 0 ? (
           <div className="px-6 py-16 text-center text-sm text-slate-400">No discrepancies reported.</div>
         ) : (
-          <Table headers={['PO', 'Delivery', 'Item', 'Type', 'Qty', 'Status', 'Reported', '']}>
+          <Table headers={['PO', 'Delivery', 'Item', 'Type', { label: 'Qty', align: 'right' }, 'Status', 'Reported', '']}>
             {data.map((d) => (
               <tr
                 key={d.id}
@@ -170,7 +170,7 @@ export default function DiscrepanciesPage() {
                 <td className="px-4 py-3">
                   <Badge color={badgeColor(d.discrepancyType)}>{label(d.discrepancyType)}</Badge>
                 </td>
-                <td className="px-4 py-3">{d.quantity ?? '—'}</td>
+                <td className="px-4 py-3 text-right">{d.quantity ?? '—'}</td>
                 <td className="px-4 py-3">
                   <Badge color={badgeColor(d.status)}>{label(d.status)}</Badge>
                 </td>

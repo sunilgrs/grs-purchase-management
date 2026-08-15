@@ -188,11 +188,13 @@ export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () =
   )
 }
 
+export type TableHeader = ReactNode | { label: ReactNode; align?: 'left' | 'center' | 'right' }
+
 export function Table({
   headers,
   children,
 }: {
-  headers: ReactNode[]
+  headers: TableHeader[]
   children: ReactNode
 }) {
   return (
@@ -200,14 +202,24 @@ export function Table({
       <table className="min-w-[640px] w-full divide-y divide-slate-200 text-sm lg:min-w-full">
         <thead className="bg-emerald-50/80">
           <tr>
-            {headers.map((h, i) => (
-              <th
-                key={i}
-                className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-emerald-900/60"
-              >
-                {h}
-              </th>
-            ))}
+            {headers.map((h, i) => {
+              const isCol = typeof h === 'object' && h !== null && 'label' in h
+              const align = isCol ? (h as { align?: string }).align ?? 'left' : 'left'
+              const alignClass =
+                align === 'right'
+                  ? 'text-right'
+                  : align === 'center'
+                    ? 'text-center'
+                    : 'text-left'
+              return (
+                <th
+                  key={i}
+                  className={`whitespace-nowrap px-4 py-3.5 align-middle text-xs font-semibold uppercase tracking-wider text-emerald-900/60 ${alignClass}`}
+                >
+                  {isCol ? (h as { label: ReactNode }).label : h}
+                </th>
+              )
+            })}
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 bg-white">{children}</tbody>

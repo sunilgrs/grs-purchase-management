@@ -56,6 +56,7 @@ export interface CrudConfig<T> {
   canDelete?: boolean
   deleteMessage?: (row: T) => string
   isActive?: (row: T) => boolean
+  defaultFilter?: FilterValue
   extraActions?: (row: T) => ReactNode
   headerActions?: (helpers: { reload: () => void }) => ReactNode
   createPayload: (values: Record<string, unknown>) => Record<string, unknown>
@@ -78,7 +79,7 @@ export function CrudPage<T extends { id: number }>({
   const [editing, setEditing] = useState<T | null>(null)
   const [deleting, setDeleting] = useState<T | null>(null)
   const [optionMap, setOptionMap] = useState<Record<string, CrudOption[]>>({})
-  const [filter, setFilter] = useState<FilterValue>('all')
+  const [filter, setFilter] = useState<FilterValue>(config.defaultFilter ?? 'all')
   const action = useApiAction()
 
   const isActive =

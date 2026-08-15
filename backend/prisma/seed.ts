@@ -62,7 +62,6 @@ async function main() {
 
   const adminPassword = await bcrypt.hash('admin123', 10);
   const staffPassword = await bcrypt.hash('staff123', 10);
-  const managerPassword = await bcrypt.hash('manager123', 10);
 
   const admin = await prisma.user.create({
     data: {
@@ -89,15 +88,6 @@ async function main() {
       email: 'priya@grs.example',
       password: staffPassword,
       role: 'STORE_MANAGER',
-    },
-  });
-  const manager = await prisma.user.create({
-    data: {
-      name: 'Suresh Verma',
-      mobile: '9000000004',
-      email: 'manager@grs.example',
-      password: managerPassword,
-      role: 'MANAGER',
     },
   });
 
@@ -152,7 +142,7 @@ async function main() {
       requiredDate: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
       priority: 'HIGH',
       status: 'COMPLETED',
-      approvedById: manager.id,
+      approvedById: storeManager.id,
       remarks: 'Quarterly stationery restock',
       items: {
         create: [
@@ -217,7 +207,7 @@ async function main() {
       requiredDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
       priority: 'HIGH',
       status: 'AWAITING_DELIVERY',
-      approvedById: manager.id,
+      approvedById: storeManager.id,
       remarks: 'Safety gear for warehouse team',
       items: {
         create: [
@@ -302,7 +292,7 @@ async function main() {
       requiredDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
       priority: 'NORMAL',
       status: 'MATERIAL_RECEIVED',
-      approvedById: manager.id,
+      approvedById: storeManager.id,
       remarks: 'Bulk gloves order for safety stock',
       items: {
         create: [{ itemId: gloves.id, quantity: 50 }],
@@ -370,14 +360,14 @@ async function main() {
         entityId: String(completedPo.id),
         action: 'CREATED',
         description: `Purchase order ${completedPo.poNumber} created against requirement ${completedReq.requirementNo}`,
-        performedById: manager.id,
+        performedById: storeManager.id,
       },
       {
         entityType: 'Discrepancy',
         entityId: String(resolvedDiscrepancy.id),
         action: 'COMPLETED',
         description: 'Issue DAMAGE on completed PO resolved and closed',
-        performedById: manager.id,
+        performedById: storeManager.id,
       },
     ],
   });
@@ -385,7 +375,6 @@ async function main() {
   console.log('Seed complete.');
   console.log('  Users:');
   console.log(`    Admin:       admin@grs.example / admin123`);
-  console.log(`    Manager:     manager@grs.example / manager123`);
   console.log(`    StoreMgr:    priya@grs.example / staff123`);
   console.log(`    StoreKeeper: ramesh@grs.example / staff123`);
   console.log(`  Requirements: ${completedReq.requirementNo} (COMPLETED), ${awaitingReq.requirementNo} (AWAITING_DELIVERY), ${receivedReq.requirementNo} (MATERIAL_RECEIVED), plus DRAFT/SUBMITTED/REJECTED.`);

@@ -158,6 +158,7 @@ function UsersPage() {
     endpoint: '/users',
     subtitle: isAdmin ? 'Manage staff accounts' : 'Read-only list',
     canDelete: isAdmin,
+    defaultFilter: 'active',
     isActive: (r) => r.status === 'ACTIVE',
     extraActions: isAdmin
       ? (r) => (
