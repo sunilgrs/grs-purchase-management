@@ -97,6 +97,28 @@ describe('VendorsPage', () => {
     await waitFor(() => expect(apiMock.delete).toHaveBeenCalledWith('/vendors/1'))
   })
 
+  it('shows the import button for admins only', async () => {
+    mocks.role = 'ADMIN'
+    await renderAsync(<VendorsPage />)
+    expect(screen.getByRole('button', { name: /import excel/i })).toBeInTheDocument()
+  })
+
+  it('hides the import button for other roles', async () => {
+    mocks.role = 'MANAGER'
+    await renderAsync(<VendorsPage />)
+    expect(screen.queryByRole('button', { name: /import excel/i })).not.toBeInTheDocument()
+
+    mocks.role = 'STORE_KEEPER'
+    cleanup()
+    await renderAsync(<VendorsPage />)
+    expect(screen.queryByRole('button', { name: /import excel/i })).not.toBeInTheDocument()
+
+    mocks.role = 'STORE_MANAGER'
+    cleanup()
+    await renderAsync(<VendorsPage />)
+    expect(screen.queryByRole('button', { name: /import excel/i })).not.toBeInTheDocument()
+  })
+
   it('shows dashes and inactive status for a vendor with missing fields', async () => {
     mocks.data = {
       '/vendors': [

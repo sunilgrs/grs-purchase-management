@@ -196,14 +196,14 @@ Admins can control which tabs each user can open from the **Settings** tab
 ## Testing
 
 ```bash
-# Backend — unit (76) + e2e (85) tests
+# Backend — unit (82) + e2e (92) tests
 cd backend
 npm run test
 npm run test:e2e
 npm run lint
 npm run build
 
-# Frontend — unit/component tests (261 tests) with coverage
+# Frontend — unit/component tests (263 tests) with coverage
 cd frontend
 npm run test
 npm run test:coverage

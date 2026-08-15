@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { CrudPage } from '../components/CrudPage'
 import type { CrudConfig } from '../components/CrudPage'
 import { ItemImportButton } from '../components/ItemImport'
+import { VendorImportButton } from '../components/VendorImport'
 import { Badge, Button, ConfirmDialog, Modal } from '../components/ui'
 import { api } from '../lib/api'
 import type { Item, User, Vendor } from '../types'
@@ -13,6 +14,7 @@ function VendorsPage() {
     title: 'Vendors',
     endpoint: '/vendors',
     canDelete: true,
+    headerActions: ({ reload }) => <VendorImportButton onDone={reload} />,
     isActive: (r) => Boolean(r.active),
     columns: [
       { header: 'Vendor', render: (r) => <span className="font-medium text-emerald-950">{r.vendorName}</span> },
