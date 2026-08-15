@@ -1,4 +1,4 @@
-import { Button, Select } from './ui'
+import { Button, Input, Select } from './ui'
 import type { Item } from '../types'
 import { newLine, type LineDraft } from '../lib/lines'
 
@@ -56,14 +56,14 @@ export function ItemLineEditor({
                 </Select>
               </div>
               <div className="w-28">
-                <Select label=" " value={line.quantity} onChange={(e) => update(line.key, { quantity: e.target.value })}>
-                  <option value="">Qty</option>
-                  {[1, 2, 5, 10, 15, 20, 25, 50, 100].map((q) => (
-                    <option key={q} value={String(q)}>
-                      {q}
-                    </option>
-                  ))}
-                </Select>
+                <Input
+                  label=" "
+                  type="number"
+                  min="1"
+                  placeholder="Qty"
+                  value={line.quantity}
+                  onChange={(e) => update(line.key, { quantity: e.target.value })}
+                />
               </div>
               {includePrice && (
                 <div className="w-32">

@@ -258,9 +258,8 @@ describe('RequirementsPage', () => {
     await userEv.click(within(dialog).getByRole('button', { name: /add item/i }))
     const selects = within(dialog).getAllByRole('combobox')
     const itemSelect = selects.find((s) => within(s).queryByRole('option', { name: /select item/i }))!
-    const qtySelect = selects.find((s) => within(s).queryByRole('option', { name: 'Qty' }))!
     await userEv.selectOptions(itemSelect, '1')
-    await userEv.selectOptions(qtySelect, '5')
+    await userEv.type(within(dialog).getByPlaceholderText('Qty'), '5')
     await userEv.type(within(dialog).getByRole('textbox'), 'Urgent request')
     await userEv.click(within(dialog).getByRole('button', { name: /create requirement/i }))
     expect(mocks.apiPost).toHaveBeenCalledWith('/requirements', {
