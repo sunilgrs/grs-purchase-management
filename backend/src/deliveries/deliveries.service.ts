@@ -76,7 +76,7 @@ export class DeliveriesService {
           deliveryDate: createDeliveryDto.deliveryDate
             ? new Date(createDeliveryDto.deliveryDate)
             : undefined,
-          status: createDeliveryDto.status ?? 'PARTIAL',
+          status: createDeliveryDto.status ?? 'FULL',
           remarks: createDeliveryDto.remarks,
           items: {
             create: createDeliveryDto.items.map((i) => ({

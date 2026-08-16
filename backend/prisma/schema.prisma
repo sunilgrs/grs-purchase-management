@@ -91,7 +91,7 @@ model Delivery {
   poId          Int
   deliveryDate  DateTime       @default(now())
   receivedById  Int
-  status        String         @default("PARTIAL")
+  status        String         @default("FULL")
   remarks       String?
   createdAt     DateTime       @default(now())
   User          User           @relation(fields: [receivedById], references: [id])
