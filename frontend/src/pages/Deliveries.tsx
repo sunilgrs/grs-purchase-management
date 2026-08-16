@@ -40,7 +40,7 @@ export default function DeliveriesPage() {
   const [deliverForm, setDeliverForm] = useState({
     receivedById: '',
     deliveryDate: new Date().toISOString().slice(0, 10),
-    status: 'PARTIAL',
+    status: 'FULL',
     remarks: '',
   })
   const [deliverLines, setDeliverLines] = useState<LineDraft[]>([])
@@ -52,7 +52,7 @@ export default function DeliveriesPage() {
     setDeliverForm({
       receivedById: '',
       deliveryDate: new Date().toISOString().slice(0, 10),
-      status: 'PARTIAL',
+      status: 'FULL',
       remarks: '',
     })
     setDeliverLines([])
