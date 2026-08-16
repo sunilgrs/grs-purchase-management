@@ -19,9 +19,27 @@ const PALETTE = [
 ]
 
 const COLOR_OVERRIDES: Record<string, string> = {
-  partial: '#0ea5e9',
-  shortage: '#0ea5e9',
+  high: '#f43f5e',
+  urgent: '#dc2626',
+  normal: '#3b82f6',
   low: '#0ea5e9',
+  pending: '#f59e0b',
+  in_progress: '#f97316',
+  submitted: '#8b5cf6',
+  approved: '#22c55e',
+  completed: '#059669',
+  delivered: '#16a34a',
+  cancelled: '#64748b',
+  partial: '#0d9488',
+  shortage: '#f59e0b',
+  damaged: '#dc2626',
+  wrong_item: '#8b5cf6',
+  open: '#f59e0b',
+  resolved: '#059669',
+  rejected: '#dc2626',
+  awaiting_delivery: '#6366f1',
+  replacement_awaited: '#d946ef',
+  verification_pending: '#f97316',
 }
 
 function colorFor(label: string, index: number): string {

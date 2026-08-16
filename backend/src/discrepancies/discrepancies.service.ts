@@ -287,7 +287,7 @@ export class DiscrepanciesService {
     };
 
     const formats = WHATSAPP_FORMATS.map((f) => {
-      const message = buildDiscrepancyMessage(data, f.id);
+      const message = buildDiscrepancyMessage(data);
       return {
         id: f.id,
         label: f.label,

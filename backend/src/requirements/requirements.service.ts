@@ -469,7 +469,7 @@ export class RequirementsService {
     };
 
     const formats = WHATSAPP_FORMATS.map((f) => {
-      const message = buildRequirementMessage(data, f.id);
+      const message = buildRequirementMessage(data);
       return {
         id: f.id,
         label: f.label,

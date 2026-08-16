@@ -43,12 +43,8 @@ describe('formatDateLabel', () => {
 });
 
 describe('WHATSAPP_FORMATS', () => {
-  it('offers formal, short and friendly formats', () => {
-    expect(WHATSAPP_FORMATS.map((f) => f.id)).toEqual([
-      'formal',
-      'short',
-      'friendly',
-    ]);
+  it('offers only the formal format', () => {
+    expect(WHATSAPP_FORMATS.map((f) => f.id)).toEqual(['formal']);
   });
 });
 
@@ -65,33 +61,19 @@ describe('buildRequirementMessage', () => {
   };
 
   it('renders the formal format with numbered lines and price', () => {
-    const message = buildRequirementMessage(data, 'formal');
+    const message = buildRequirementMessage(data);
     expect(message).toContain('Dear Acme Supplies,');
     expect(message).toContain('PO-0001');
-    expect(message).toContain('REQ-1');
     expect(message).toContain('1. Cement — 5 bag @ ₹450');
     expect(message).toContain('2. Steel Rods — 10 pcs');
     expect(message).toContain('Expected delivery: 30 Aug 2026');
+    expect(message).toContain('GRS Fantasy Park, Mysuru');
   });
 
-  it('renders the short format more concisely', () => {
-    const message = buildRequirementMessage(data, 'short');
-    expect(message).toContain('Hi Acme Supplies,');
-    expect(message).toContain('Order PO-0001 is confirmed');
-    expect(message).toContain('Delivery expected by 30 Aug 2026');
-    expect(message).not.toContain('Dear Acme Supplies');
-  });
-
-  it('renders the friendly format', () => {
-    const message = buildRequirementMessage(data, 'friendly');
-    expect(message).toContain('Hello Acme Supplies!');
-    expect(message).toContain('arrange delivery by 30 Aug 2026');
-  });
-
-  it('defaults to formal when no format is given', () => {
-    expect(buildRequirementMessage(data)).toBe(
-      buildRequirementMessage(data, 'formal'),
-    );
+  it('does not use casual greetings', () => {
+    const message = buildRequirementMessage(data);
+    expect(message).not.toContain('Hi Acme');
+    expect(message).not.toContain('Hello Acme');
   });
 });
 
@@ -106,7 +88,7 @@ describe('buildDiscrepancyMessage', () => {
   };
 
   it('renders the formal format with item and issue details', () => {
-    const message = buildDiscrepancyMessage(data, 'formal');
+    const message = buildDiscrepancyMessage(data);
     expect(message).toContain('Dear Acme Supplies,');
     expect(message).toContain('Item: Cement');
     expect(message).toContain('Issue: DAMAGE (qty 3)');
@@ -114,23 +96,17 @@ describe('buildDiscrepancyMessage', () => {
     expect(message).toContain('Please arrange a replacement at the earliest.');
   });
 
-  it('renders the short format', () => {
-    const message = buildDiscrepancyMessage(data, 'short');
-    expect(message).toContain('Hi Acme Supplies,');
-    expect(message).toContain('Please send a replacement as soon as possible.');
-  });
-
-  it('renders the friendly format', () => {
-    const message = buildDiscrepancyMessage(data, 'friendly');
-    expect(message).toContain('Hello Acme Supplies,');
-    expect(message).toContain('Many thanks!');
+  it('does not use casual greetings', () => {
+    const message = buildDiscrepancyMessage(data);
+    expect(message).not.toContain('Hi Acme');
+    expect(message).not.toContain('Hello Acme');
   });
 
   it('omits the details line when there is no description', () => {
-    const message = buildDiscrepancyMessage(
-      { ...data, description: null },
-      'formal',
-    );
+    const message = buildDiscrepancyMessage({
+      ...data,
+      description: null,
+    });
     expect(message).not.toContain('Details:');
   });
 });

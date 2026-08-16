@@ -7,26 +7,33 @@ describe('badgeColor', () => {
     expect(badgeColor('VERIFIED')).toBe('green')
   })
 
-  it('maps material received to blue', () => {
-    expect(badgeColor('MATERIAL_RECEIVED')).toBe('blue')
+  it('maps in-progress / material-received statuses to teal', () => {
+    expect(badgeColor('IN_PROGRESS')).toBe('teal')
+    expect(badgeColor('MATERIAL_RECEIVED')).toBe('teal')
   })
 
-  it('maps pending-ish statuses to amber', () => {
+  it('maps each pending-ish status to its own color', () => {
     expect(badgeColor('PENDING')).toBe('amber')
-    expect(badgeColor('awaiting_delivery')).toBe('amber')
-    expect(badgeColor('VERIFICATION_PENDING')).toBe('amber')
-    expect(badgeColor('REPLACEMENT_AWAITED')).toBe('amber')
+    expect(badgeColor('awaiting_delivery')).toBe('indigo')
+    expect(badgeColor('VERIFICATION_PENDING')).toBe('orange')
+    expect(badgeColor('REPLACEMENT_AWAITED')).toBe('fuchsia')
   })
 
   it('maps rejected status to red', () => {
     expect(badgeColor('REJECTED')).toBe('red')
   })
 
-  it('maps sent/assigned/review statuses to blue', () => {
-    expect(badgeColor('WHATSAPP_SENT')).toBe('blue')
-    expect(badgeColor('vendor_assigned')).toBe('blue')
-    expect(badgeColor('ISSUE_RAISED')).toBe('blue')
-    expect(badgeColor('MANAGER_REVIEW')).toBe('blue')
+  it('maps each sent/assigned/review status to its own color', () => {
+    expect(badgeColor('WHATSAPP_SENT')).toBe('indigo')
+    expect(badgeColor('vendor_assigned')).toBe('cyan')
+    expect(badgeColor('ISSUE_RAISED')).toBe('rose')
+    expect(badgeColor('MANAGER_REVIEW')).toBe('violet')
+  })
+
+  it('gives priorities distinct colors', () => {
+    expect(badgeColor('HIGH')).toBe('rose')
+    expect(badgeColor('NORMAL')).toBe('blue')
+    expect(badgeColor('LOW')).toBe('cyan')
   })
 
   it('falls back to slate for unknown statuses', () => {

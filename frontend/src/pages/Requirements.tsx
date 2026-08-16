@@ -43,13 +43,6 @@ interface ApproveLine {
   unitPrice: string
 }
 
-interface WhatsAppFormatVariant {
-  id: string
-  label: string
-  message: string
-  waLink: string | null
-}
-
 interface WhatsAppPayload {
   message: string
   waLink: string | null
@@ -57,7 +50,6 @@ interface WhatsAppPayload {
   vendor: string
   poNumber: string
   expectedDate: string
-  formats?: WhatsAppFormatVariant[]
 }
 
 const label = (status: string) => status.replace(/_/g, ' ')
@@ -673,7 +665,6 @@ function WhatsAppModal({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-  const [selected, setSelected] = useState('formal')
 
   useEffect(() => {
     if (!requirement) return
@@ -681,7 +672,6 @@ function WhatsAppModal({
     setPayload(null)
     setLoading(true)
     setError(null)
-    setSelected('formal')
     api
       .get<WhatsAppPayload>(`/requirements/${requirement.id}/whatsapp-message`)
       .then((p) => {
@@ -698,10 +688,8 @@ function WhatsAppModal({
     }
   }, [requirement])
 
-  const current =
-    payload?.formats?.find((f) => f.id === selected) ?? null
-  const message = current?.message ?? payload?.message ?? ''
-  const waLink = current?.waLink ?? payload?.waLink ?? null
+  const message = payload?.message ?? ''
+  const waLink = payload?.waLink ?? null
 
   const copy = async () => {
     if (!message) return
@@ -724,26 +712,6 @@ function WhatsAppModal({
                 Send this order message to <span className="font-medium text-slate-800">{payload.vendor}</span>
                 {payload.mobile ? ` (${payload.mobile})` : ''}. Copy it or open WhatsApp directly, then mark it as sent.
               </p>
-              {payload.formats && payload.formats.length > 1 ? (
-                <fieldset>
-                  <legend className="mb-1.5 text-sm font-medium text-slate-700">Message format</legend>
-                  <div className="flex flex-wrap gap-4">
-                    {payload.formats.map((f) => (
-                      <label key={f.id} className="inline-flex items-center gap-1.5 text-sm text-slate-700">
-                        <input
-                          type="radio"
-                          name="wa-message-format"
-                          value={f.id}
-                          checked={selected === f.id}
-                          onChange={() => setSelected(f.id)}
-                          className="h-4 w-4 accent-emerald-600"
-                        />
-                        {f.label}
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-              ) : null}
               <textarea
                 readOnly
                 rows={10}

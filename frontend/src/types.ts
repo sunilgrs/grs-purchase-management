@@ -169,4 +169,16 @@ export interface AuditLog {
   User?: { id: number; name: string; mobile: string } | null
 }
 
-export type StatusColor = 'slate' | 'green' | 'amber' | 'red' | 'blue' | 'violet'
+export type StatusColor =
+  | 'slate'
+  | 'green'
+  | 'amber'
+  | 'red'
+  | 'blue'
+  | 'violet'
+  | 'rose'
+  | 'orange'
+  | 'teal'
+  | 'cyan'
+  | 'indigo'
+  | 'fuchsia'
