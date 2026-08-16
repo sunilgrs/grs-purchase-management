@@ -9,9 +9,9 @@ import {
 } from 'class-validator';
 
 export class CreateItemDto {
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  itemCode: string;
+  itemCode?: string;
 
   @IsString()
   @IsNotEmpty()

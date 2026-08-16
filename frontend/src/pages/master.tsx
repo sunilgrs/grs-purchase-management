@@ -77,7 +77,7 @@ function ItemsPage() {
       },
     ],
     fields: [
-      { name: 'itemCode', label: 'Item Code', type: 'text', required: true, placeholder: 'e.g. ITM-001' },
+      { name: 'itemCode', label: 'Item Code', type: 'text', placeholder: 'e.g. ITM-001 (optional)' },
       { name: 'itemName', label: 'Item Name', type: 'text', required: true },
       { name: 'categoryId', label: 'Category', type: 'select', optionsEndpoint: '/categories' },
       { name: 'unit', label: 'Unit', type: 'text', required: true, placeholder: 'e.g. kg, box, pcs' },

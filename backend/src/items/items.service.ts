@@ -26,12 +26,34 @@ export class ItemsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createItemDto: CreateItemDto) {
+    let itemCode = createItemDto.itemCode?.trim();
+    if (!itemCode) {
+      itemCode = await this.generateItemCode();
+    }
     const existing = await this.prisma.item.findUnique({
-      where: { itemCode: createItemDto.itemCode },
+      where: { itemCode },
     });
     if (existing)
       throw new ConflictException('An item with this code already exists');
-    return this.prisma.item.create({ data: createItemDto });
+    return this.prisma.item.create({ data: { ...createItemDto, itemCode } });
+  }
+
+  private async generateItemCode(): Promise<string> {
+    const last = await this.prisma.item.findFirst({
+      orderBy: { id: 'desc' },
+      select: { id: true },
+    });
+    const base = last?.id ?? 0;
+    let n = base + 1;
+    while (n < base + 1000) {
+      const candidate = `ITM-${String(n).padStart(3, '0')}`;
+      const exists = await this.prisma.item.findUnique({
+        where: { itemCode: candidate },
+      });
+      if (!exists) return candidate;
+      n += 1;
+    }
+    throw new BadRequestException('Could not generate a unique item code');
   }
 
   findAll() {
@@ -96,7 +118,7 @@ export class ItemsService {
     );
 
     const errors: ImportError[] = [];
-    const toImport: CreateItemDto[] = [];
+    const toImport: (CreateItemDto & { itemCode: string })[] = [];
     for (const row of rows) {
       if (!row.itemCode) {
         errors.push({ row: row.rowNumber, message: 'Item Code is required' });
