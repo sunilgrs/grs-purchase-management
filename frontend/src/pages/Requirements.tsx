@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useFocusParam } from '../hooks/useFocus'
 import { ItemLineEditor } from '../components/ItemLineEditor'
 import type { LineDraft } from '../components/ItemLineEditor'
@@ -215,7 +215,7 @@ export default function RequirementsPage() {
                         Edit
                       </Button>
                     ) : null}
-                    {canSubmit && (r.status === 'DRAFT' || r.status === 'REJECTED' || r.status === 'SUBMITTED') ? (
+                    {canSubmit && (r.status === 'DRAFT' || r.status === 'REJECTED') ? (
                       <Button
                         size="sm"
                         variant="secondary"
@@ -526,6 +526,7 @@ function ManagerApproveModal({
 }) {
   const [lines, setLines] = useState<ApproveLine[]>([])
   const [form, setForm] = useState({ vendorId: '', expectedDate: '', notes: '' })
+  const [vendorSearch, setVendorSearch] = useState('')
 
   useEffect(() => {
     if (!requirement) return
@@ -537,10 +538,18 @@ function ManagerApproveModal({
       })),
     )
     setForm({ vendorId: '', expectedDate: '', notes: '' })
+    setVendorSearch('')
   }, [requirement])
 
   const setLine = (index: number, patch: Partial<ApproveLine>) =>
     setLines((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)))
+
+  const visibleVendors = useMemo(() => {
+    const active = vendors.filter((v) => v.active)
+    const q = vendorSearch.trim().toLowerCase()
+    if (!q) return active
+    return active.filter((v) => v.vendorName.toLowerCase().includes(q))
+  }, [vendors, vendorSearch])
 
   const valid = form.vendorId && form.expectedDate && lines.length > 0 && lines.every((l) => l.orderedQty > 0)
 
@@ -548,6 +557,14 @@ function ManagerApproveModal({
     <Modal open={Boolean(requirement)} onClose={onClose} title={`Manager Approval & Vendor Assignment — ${requirement?.requirementNo ?? ''}`} wide>
       {requirement && (
         <div className="space-y-4">
+          {vendors.filter((v) => v.active).length > 5 && (
+            <Input
+              type="search"
+              placeholder="Search vendors…"
+              value={vendorSearch}
+              onChange={(e) => setVendorSearch(e.target.value)}
+            />
+          )}
           <div className="grid grid-cols-2 gap-4">
             <Select
               label="Vendor"
@@ -556,7 +573,7 @@ function ManagerApproveModal({
               onChange={(e) => setForm({ ...form, vendorId: e.target.value })}
             >
               <option value="">— Select —</option>
-              {vendors.filter((v) => v.active).map((v) => (
+              {visibleVendors.map((v) => (
                 <option key={v.id} value={String(v.id)}>{v.vendorName}</option>
               ))}
             </Select>

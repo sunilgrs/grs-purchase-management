@@ -164,6 +164,13 @@ describe('RequirementsPage', () => {
     expect(mocks.apiPost).toHaveBeenCalledWith('/requirements/1/submit', {})
   })
 
+  it('hides the submit button once a requirement has been submitted', () => {
+    mocks.role = 'STORE_KEEPER'
+    mocks.reqs = [makeReq({ status: 'SUBMITTED' })]
+    renderPage()
+    expect(screen.queryByRole('button', { name: /submit/i })).not.toBeInTheDocument()
+  })
+
   it('hides manager review actions from store keeper', () => {
     mocks.role = 'STORE_KEEPER'
     mocks.reqs = [makeReq({ status: 'PENDING_MANAGER_APPROVAL' })]
@@ -390,6 +397,25 @@ describe('RequirementsPage', () => {
       notes: undefined,
       items: [{ itemId: 1, orderedQty: 10 }],
     })
+  })
+
+  it('shows a vendor search box and filters vendors in manager review', async () => {
+    const userEv = userEvent.setup()
+    mocks.role = 'MANAGER'
+    mocks.vendors = Array.from({ length: 6 }, (_, i) => ({
+      ...vendor,
+      id: i + 1,
+      vendorName: i === 0 ? 'Acme Supplies' : `Bulk Vendor ${i}`,
+    }))
+    mocks.reqs = [makeReq({ status: 'PENDING_MANAGER_APPROVAL', items: [reqItem()] })]
+    renderPage()
+    await userEv.click(screen.getByRole('button', { name: /manager review/i }))
+    const dialog = screen.getByRole('dialog')
+    await userEv.type(within(dialog).getByPlaceholderText(/search vendors/i), 'acme')
+    expect(
+      within(dialog).getByRole('option', { name: 'Acme Supplies' }),
+    ).toBeInTheDocument()
+    expect(within(dialog).queryByRole('option', { name: /Bulk Vendor/ })).not.toBeInTheDocument()
   })
 
   it('rejects a requirement from manager review', async () => {

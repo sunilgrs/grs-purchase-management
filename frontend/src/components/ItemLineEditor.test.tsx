@@ -79,6 +79,22 @@ describe('ItemLineEditor', () => {
     expect(screen.queryByRole('option', { name: 'Retired (ITM-3)' })).not.toBeInTheDocument()
   })
 
+  it('shows a search box and filters item options when there are many items', async () => {
+    const user = userEvent.setup()
+    const many = Array.from({ length: 6 }, (_, i) => ({
+      ...items[0],
+      id: i + 10,
+      itemCode: `ITM-${i + 10}`,
+      itemName: i === 0 ? 'Cement' : `Bulk Item ${i}`,
+      active: true,
+    }))
+    renderEditor({ items: many, lines: [newLine()] })
+    const search = screen.getByPlaceholderText(/search items/i)
+    await user.type(search, 'cement')
+    expect(screen.getByRole('option', { name: 'Cement (ITM-10)' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: /Bulk Item/ })).not.toBeInTheDocument()
+  })
+
   it('updates a line when the item selection changes', async () => {
     const user = userEvent.setup()
     const lines = [newLine({ itemId: '1', quantity: '10' })]

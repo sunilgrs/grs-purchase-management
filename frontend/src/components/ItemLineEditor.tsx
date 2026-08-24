@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { Button, Input, Select } from './ui'
 import type { Item } from '../types'
 import { newLine, type LineDraft } from '../lib/lines'
@@ -18,6 +19,18 @@ export function ItemLineEditor({
   includePrice?: boolean
   includeCondition?: boolean
 }) {
+  const [search, setSearch] = useState('')
+  const visibleItems = useMemo(() => {
+    const active = items.filter((it) => it.active)
+    const q = search.trim().toLowerCase()
+    if (!q) return active
+    return active.filter(
+      (it) =>
+        it.itemName.toLowerCase().includes(q) ||
+        it.itemCode.toLowerCase().includes(q),
+    )
+  }, [items, search])
+
   const update = (key: number, patch: Partial<LineDraft>) =>
     onChange(lines.map((l) => (l.key === key ? { ...l, ...patch } : l)))
 
@@ -29,11 +42,20 @@ export function ItemLineEditor({
           size="sm"
           variant="secondary"
           onClick={() => onChange([...lines, newLine()])}
-          disabled={items.length === 0}
+          disabled={visibleItems.length === 0}
         >
           + Add item
         </Button>
       </div>
+
+      {items.length > 5 && (
+        <Input
+          type="search"
+          placeholder="Search items…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      )}
 
       {lines.length === 0 ? (
         <p className="rounded-md border border-dashed border-slate-300 px-3 py-4 text-center text-xs text-slate-400">
@@ -46,13 +68,11 @@ export function ItemLineEditor({
               <div className="flex-1">
                 <Select value={line.itemId} onChange={(e) => update(line.key, { itemId: e.target.value })}>
                   <option value="">— Select item —</option>
-                  {items
-                    .filter((it) => it.active)
-                    .map((it) => (
-                      <option key={it.id} value={String(it.id)}>
-                        {it.itemName} ({it.itemCode})
-                      </option>
-                    ))}
+                  {visibleItems.map((it) => (
+                    <option key={it.id} value={String(it.id)}>
+                      {it.itemName} ({it.itemCode})
+                    </option>
+                  ))}
                 </Select>
               </div>
               <div className="w-28">
