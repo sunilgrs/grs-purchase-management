@@ -58,7 +58,7 @@ export class ItemsService {
 
   findAll() {
     return this.prisma.item.findMany({
-      orderBy: { id: 'desc' },
+      orderBy: { itemName: 'asc' },
       include: {
         Category: true,
         Vendor: { select: { id: true, vendorName: true } },

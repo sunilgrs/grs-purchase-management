@@ -36,7 +36,7 @@ export class VendorsService {
 
   findAll() {
     return this.prisma.vendor.findMany({
-      orderBy: { id: 'desc' },
+      orderBy: { vendorName: 'asc' },
       include: { _count: { select: { Item: true, PurchaseOrder: true } } },
     });
   }
