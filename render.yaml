@@ -1,9 +1,9 @@
 # Render Blueprint — GRS Purchase Management
 #
 # Provisions:
-#   1. grs-purchase-db        — managed PostgreSQL (data persists across deploys)
-#   2. grs-purchase-backend   — NestJS API web service
-#   3. grs-purchase-frontend  — React/Vite static site
+#   1. grs-purchase-db      — managed PostgreSQL (data persists across deploys)
+#   2. grs-purchase-api     — NestJS API web service
+#   3. grs-purchase-web     — React/Vite static site
 #
 # Database          Backend              Frontend
 #   Render Postgres <- DATABASE_URL <- NestJS API <- VITE_API_URL <- React (static)
@@ -21,7 +21,7 @@ services:
   # Backend — NestJS API (all routes under /api)
   # --------------------------------------------------------------------------
   - type: web
-    name: grs-purchase-backend
+    name: grs-purchase-api
     env: node
     region: singapore
     plan: free
@@ -50,13 +50,13 @@ services:
           name: grs-purchase-db
           property: connectionString
       - key: CORS_ORIGINS
-        value: https://grs-purchase-frontend.onrender.com
+        value: https://grs-purchase-web.onrender.com
 
   # --------------------------------------------------------------------------
   # Frontend — React/Vite static site
   # --------------------------------------------------------------------------
   - type: web
-    name: grs-purchase-frontend
+    name: grs-purchase-web
     env: static
     region: singapore
     plan: free
@@ -76,4 +76,4 @@ services:
         value: "24"
       # Vite inlines this at build time; must be the final backend URL.
       - key: VITE_API_URL
-        value: https://grs-purchase-backend.onrender.com/api
+        value: https://grs-purchase-api.onrender.com/api

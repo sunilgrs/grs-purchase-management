@@ -73,8 +73,8 @@ service + React static site). Deploying it provisions all three together:
    | Resource                    | Kind                | Purpose                    |
    | --------------------------- | ------------------- | -------------------------- |
    | `grs-purchase-db`           | PostgreSQL          | Database                   |
-   | `grs-purchase-backend`      | Web service (Node)  | NestJS API on `/api`       |
-   | `grs-purchase-frontend`     | Static site         | React app                  |
+   | `grs-purchase-api`          | Web service (Node)  | NestJS API on `/api`       |
+   | `grs-purchase-web`          | Static site         | React app                  |
 
 **What Render runs for you** (see `render.yaml`):
 
@@ -83,13 +83,13 @@ service + React static site). Deploying it provisions all three together:
 - **Frontend build**: `cd frontend && npm install --include=dev && npm run build` → serves `frontend/dist`
 
 The backend receives `DATABASE_URL` (from the Render database), a freshly generated
-`JWT_SECRET`, and `CORS_ORIGINS=https://grs-purchase-frontend.onrender.com`. The frontend
-build receives `VITE_API_URL=https://grs-purchase-backend.onrender.com/api`.
+`JWT_SECRET`, and `CORS_ORIGINS=https://grs-purchase-web.onrender.com`. The frontend
+build receives `VITE_API_URL=https://grs-purchase-api.onrender.com/api`.
 
 After the blueprint finishes, both services are reachable at:
 
-- **Frontend** — `https://grs-purchase-frontend.onrender.com`
-- **API health** — `https://grs-purchase-backend.onrender.com/api/health`
+- **Frontend** — `https://grs-purchase-web.onrender.com`
+- **API health** — `https://grs-purchase-api.onrender.com/api/health`
 
 The seed only runs when the database has zero users, so re-deploys don't duplicate demo
 data. After verifying the login/purchase workflow, change the demo passwords or delete the
