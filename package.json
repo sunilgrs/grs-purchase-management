@@ -12,7 +12,9 @@
     "test": "npm --prefix backend run test && npm --prefix backend run test:e2e && npm --prefix frontend run test",
     "test:coverage": "npm --prefix backend run test:cov && npm --prefix frontend run test:coverage",
     "lint": "npm --prefix backend run lint && npm --prefix frontend run lint",
-    "build": "npm --prefix backend run build && npm --prefix frontend run build"
+    "prebuild": "npm --prefix backend install --include=dev && npm --prefix frontend install --include=dev",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "start": "npm --prefix backend run start:prod"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
