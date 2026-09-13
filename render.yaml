@@ -58,7 +58,6 @@ services:
   - type: web
     name: grs-purchase-web
     env: static
-    region: singapore
     plan: free
     repo: https://github.com/sunilgrs/grs-purchase-management.git
     branch: main
