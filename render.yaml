@@ -1,29 +1,46 @@
+# Render Blueprint — GRS Purchase Management
+#
+# Provisions:
+#   1. grs-purchase-db        — managed PostgreSQL (data persists across deploys)
+#   2. grs-purchase-backend   — NestJS API web service
+#   3. grs-purchase-frontend  — React/Vite static site
+#
+# Database          Backend              Frontend
+#   Render Postgres <- DATABASE_URL <- NestJS API <- VITE_API_URL <- React (static)
+
 databases:
-  # Free managed PostgreSQL — data persists across deploys
   - name: grs-purchase-db
     plan: free
     region: singapore
     databaseName: grs_purchase
     user: grs_user
+    ipAllowList: [] # allow only from Render services
 
 services:
-  # Backend NestJS API Service
+  # --------------------------------------------------------------------------
+  # Backend — NestJS API (all routes under /api)
+  # --------------------------------------------------------------------------
   - type: web
     name: grs-purchase-backend
     env: node
     region: singapore
     plan: free
-    repo: https://github.com/sunilnagaragatta/grs-purchase-management.git
+    repo: https://github.com/sunilgrs/grs-purchase-management.git
     branch: main
-    buildCommand: cd backend && npm install --include=dev && npm run build && npx prisma migrate deploy && npx prisma db seed
+    healthCheckPath: /api/health
+    buildCommand: |
+      cd backend &&
+      npm install --include=dev &&
+      npm run build &&
+      npx prisma migrate deploy &&
+      npx prisma db seed
     startCommand: cd backend && npm run start:prod
     envVars:
       - key: NODE_VERSION
         value: "24"
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 3000
+      # Render injects PORT automatically — do not set it here.
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
@@ -35,13 +52,20 @@ services:
       - key: CORS_ORIGINS
         value: https://grs-purchase-frontend.onrender.com
 
-  # Frontend Vite React Static Site
+  # --------------------------------------------------------------------------
+  # Frontend — React/Vite static site
+  # --------------------------------------------------------------------------
   - type: web
     name: grs-purchase-frontend
     env: static
-    repo: https://github.com/sunilnagaragatta/grs-purchase-management.git
+    region: singapore
+    plan: free
+    repo: https://github.com/sunilgrs/grs-purchase-management.git
     branch: main
-    buildCommand: cd frontend && npm install --include=dev && npm run build
+    buildCommand: |
+      cd frontend &&
+      npm install --include=dev &&
+      npm run build
     staticPublishPath: ./frontend/dist
     routes:
       - type: rewrite
@@ -50,5 +74,6 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "24"
+      # Vite inlines this at build time; must be the final backend URL.
       - key: VITE_API_URL
         value: https://grs-purchase-backend.onrender.com/api

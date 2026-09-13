@@ -8,7 +8,7 @@ coverage
 # Generated Prisma client
 /generated
 
-# Local SQLite databases (dev + test)
+# Local dev/test databases
 *.db
 *.db-journal
 *.db-shm

@@ -4,7 +4,7 @@ A purchase management system for GRS IPS stores: requirement tracking, approval 
 purchase orders, delivery tracking, discrepancy issue lifecycle, and WhatsApp vendor
 notifications — with role-based access control.
 
-- **Backend** — NestJS 11 + Prisma 7 (SQLite) + JWT auth in [`backend/`](backend/)
+- **Backend** — NestJS 11 + Prisma 7 (PostgreSQL) + JWT auth in [`backend/`](backend/)
 - **Frontend** — React 19 + Vite 8 + TypeScript + Tailwind CSS in [`frontend/`](frontend/)
 
 ## Architecture
@@ -21,7 +21,8 @@ Requirement → Approval → PO → WhatsApp → Delivery → Verification → C
 
 ## Quickstart
 
-Prerequisites: Node.js 20+, npm.
+Prerequisites: Node.js 20+, npm, and a running **PostgreSQL** database (the schema is
+PostgreSQL-only).
 
 ```bash
 # One-shot setup (installs both apps, generates the Prisma client)
@@ -29,8 +30,8 @@ npm run setup
 
 # Backend — http://localhost:3000 (API under /api)
 cd backend
-cp .env.example .env            # then edit if needed
-npx prisma db push              # create dev.db from schema
+cp .env.example .env            # then set DATABASE_URL to your local PostgreSQL
+npx prisma migrate deploy       # apply the checked-in migrations
 npx prisma db seed              # load demo data
 npm run start:dev
 
@@ -53,83 +54,59 @@ Open http://localhost:5173 and log in with a demo account.
 | ------------------ | ------------------------------------------------------ |
 | `npm run dev`      | Backend (`start:dev`) + frontend (Vite) together       |
 | `npm run setup`    | Install both apps and generate the Prisma client       |
-| `npm run db:push`  | Create the backend SQLite DB from the schema           |
+| `npm run db:push`  | Apply schema changes to a local DB (dev only; prod uses migrations) |
 | `npm run seed`     | Load demo data into the backend DB                     |
 | `npm run test`     | Backend unit + e2e, then frontend tests                |
 | `npm run test:coverage` | Backend unit + frontend coverage reports          |
 | `npm run lint`     | ESLint (backend) + Oxlint (frontend)                   |
 | `npm run build`    | Build both apps                                        |
 
-## Docker deployment
+## Deploy to Render
 
-A full deployment runs the backend, the frontend (served by Nginx), and **Caddy** as an HTTPS
-reverse proxy, with a persistent SQLite volume — one command:
+The repo ships with a [Render Blueprint](render.yaml) (Render PostgreSQL + NestJS web
+service + React static site). Deploying it provisions all three together:
 
-```bash
-# 1. Set a strong secret (optional; defaults are dev-only) and your site address
-echo "JWT_SECRET=$(openssl rand -hex 32)" > .env
-echo "SITE_ADDRESS=localhost" >> .env    # or your domain / LAN IP / custom hostname
+1. Push this repository to GitHub (`main` branch) — `render.yaml` must be at the repo root.
+2. In the Render dashboard: **New → Blueprint** → pick your repository → **main**.
+3. Render reads `render.yaml` and creates:
 
-# 2. Build and start
-docker compose up -d --build
+   | Resource                    | Kind                | Purpose                    |
+   | --------------------------- | ------------------- | -------------------------- |
+   | `grs-purchase-db`           | PostgreSQL          | Database                   |
+   | `grs-purchase-backend`      | Web service (Node)  | NestJS API on `/api`       |
+   | `grs-purchase-frontend`     | Static site         | React app                  |
 
-# 3. (First run only) load demo data
-docker compose exec backend npx prisma db seed
-```
+**What Render runs for you** (see `render.yaml`):
 
-Then open:
+- **Backend build**: `cd backend && npm install --include=dev && npm run build && npx prisma migrate deploy && npx prisma db seed`
+- **Backend start**: `cd backend && npm run start:prod`
+- **Frontend build**: `cd frontend && npm install --include=dev && npm run build` → serves `frontend/dist`
 
-- **https://localhost** — the frontend (HTTPS)
-- **https://localhost/api/health** — API health check
+The backend receives `DATABASE_URL` (from the Render database), a freshly generated
+`JWT_SECRET`, and `CORS_ORIGINS=https://grs-purchase-frontend.onrender.com`. The frontend
+build receives `VITE_API_URL=https://grs-purchase-backend.onrender.com/api`.
 
-### TLS
+After the blueprint finishes, both services are reachable at:
 
-Caddy terminates TLS automatically, so there is no certificate to generate by hand:
+- **Frontend** — `https://grs-purchase-frontend.onrender.com`
+- **API health** — `https://grs-purchase-backend.onrender.com/api/health`
 
-- `SITE_ADDRESS=localhost` or a private IP (e.g. `192.168.1.50`) → Caddy issues a self-signed
-  certificate from its internal CA. No DNS needed, works straight away.
-- `SITE_ADDRESS=purchase.example.com` → Caddy obtains a real **Let's Encrypt** certificate and
-  renews it automatically. Ports 80/443 must reach this machine, and `CORS_ORIGINS` should use
-  the `https://` origin.
-- A **custom local hostname** (e.g. `SITE_ADDRESS=ips-purchase-manager`) → not `localhost`, so
-  Caddy would try Let's Encrypt and fail. Set `TLS_INTERNAL=internal` in `.env` to force the
-  internal CA, and map the name to loopback so the browser finds it:
-  - Add `127.0.0.1 ips-purchase-manager` to `C:\Windows\System32\drivers\etc\hosts` (admin).
-  - Add `https://ips-purchase-manager` to `CORS_ORIGINS` in `.env`.
+The seed only runs when the database has zero users, so re-deploys don't duplicate demo
+data. After verifying the login/purchase workflow, change the demo passwords or delete the
+demo accounts (see [Demo accounts](#demo-accounts)) before real users sign up.
 
-HTTP on port 80 is automatically redirected to HTTPS.
-
-To trust the internal CA so browsers/curl stop warning about the self-signed certificate, import
-Caddy's root certificate once:
-
-```bash
-docker compose exec caddy cat /data/caddy/pki/authorities/local/root.crt > caddy-root.crt
-
-# Windows (admin PowerShell)
-certutil -addstore -f Root .\caddy-root.crt
-# or double-click caddy-root.crt -> Install Certificate -> Local Machine -> Trusted Root Certification Authorities
-```
-
-Notes:
-
-- The backend (`:3000`) and frontend (`:8080`) containers are no longer published on the host;
-  all traffic goes through Caddy on port 443 (HTTPS) with port 80 redirecting to it.
-- The database is a SQLite file inside the `grs-data` volume (mounted at `/app/data/grs.db` in the
-  backend container). Migrations run automatically on container start.
-- `docker compose down` keeps the data volume; `docker compose down -v` wipes it.
-- To run the backend outside Docker against a file on disk, keep the existing local workflow
-  (`npx prisma db push && npx prisma db seed`).
+> **Deploying updates:** commit and push to `main`. `render.yaml` changes are applied via
+> **Sync** in the Blueprint, and each service rebuilds automatically from new commits.
 
 ## Production hardening
 
-- **JWT secret** — set a strong `JWT_SECRET` in `.env` (see `.env.example`). Never use the default.
+- **JWT secret** — Render generates a fresh `JWT_SECRET` for the blueprint. Never commit a
+  secret; if you need one locally use `openssl rand -hex 32`.
 - **Rate limiting** — the API is rate-limited (100 req/min globally, 10 req/min on `/api/auth/*`).
   Disabled when `NODE_ENV=test` so test suites are unaffected.
-- **CORS** — the backend only allows origins in `CORS_ORIGINS` (default: localhost dev ports).
-  The Nginx container proxies `/api`, so browsers talking to the frontend are same-origin regardless.
-- **HTTPS** — TLS is terminated by the bundled Caddy proxy (see [Docker deployment](#docker-deployment)).
-  Self-signed by default for localhost/private IPs; a public `SITE_ADDRESS` gets an automatic
-  Let's Encrypt certificate. Set `CORS_ORIGINS` to the public `https://` origin when using one.
+- **CORS** — the backend only allows origins in `CORS_ORIGINS`. Production ships the Render
+  frontend URL; local dev defaults to the Vite dev ports (see `backend/.env.example`).
+- **HTTPS** — terminated by Render automatically (both services have `https://` URLs).
 
 ## Bulk item import (Excel)
 
@@ -212,6 +189,12 @@ npm run build
 
 ## Database
 
-- Runtime DB: `backend/dev.db` (gitignored). Rebuild anytime with `npx prisma db push` and `npx prisma db seed`.
-- E2E tests use a separate DB (`backend/test/test-e2e.db`) and must run single-threaded (`--runInBand`).
-- Prisma 7 requires `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` consent for `db push`.
+- Runtime DB is **PostgreSQL** (the Prisma schema sets `provider = "postgresql"`).
+  Production DB comes from the Render blueprint; local dev uses the `DATABASE_URL` in
+  `backend/.env`.
+- Apply checked-in migrations with `npx prisma migrate deploy` (production) or
+  `npx prisma migrate dev` (local development).
+- The seed (`prisma db seed`) inserts demo users, stores, items and requirements, but only
+  when the database has zero users — so it is safe to run on each deploy.
+- E2E tests need a local PostgreSQL (the GitHub Actions workflow spins one up) and must run
+  single-threaded (`--runInBand`).
